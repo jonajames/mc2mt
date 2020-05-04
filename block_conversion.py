@@ -1,6 +1,6 @@
 
 enabled_mods = [
-#    "quartz",
+    "quartz",
 #    "nether",
 ]
 
@@ -22,19 +22,23 @@ def convertBlock(block):
     stairname = name
     if "_slab" in stairname:
         for term,translation in stairs_translation_array: stairname = stairname.replace(term,translation)
-        if "slab_"+stairname in stairs_valid_array: return ("stairs:slab_"+stairname,15,type2facedir(block))
+        stairname = "slab_"+stairname
+        if stairname in stairs_valid_array: return ("stairs:"+stairname,15,type2facedir(block))
+        stairname = stairname.replace("block_","")+"_block"
+        if stairname in stairs_valid_array: return ("stairs:"+stairname,15,type2facedir(block))   
     if "_stairs" in stairname:
         for term,translation in stairs_translation_array: stairname = stairname.replace(term,translation)
         stairname = "stair_"+shape2stair(block)+stairname
         if stairname in stairs_valid_array: return ("stairs:"+stairname,15,stair2facedir(block))
+        stairname = stairname.replace("block_","")+"_block"
+        if stairname in stairs_valid_array: return ("stairs:"+stairname,15,stair2facedir(block))        
 
     if "white_bed" == name:
         if block["part"] == "foot": return ("beds:bed_bottom",0,facing2facedir(block))
         else: return air
 
-    if "_door" in name:
-        doorname = name + (block["open"] == "false" and "_a" or "_b")
-        if doorname in door_table: return getFromTable(door_table,doorname,block)
+    if name == "iron_door" : return getFromTable(door_table,"iron_door"+open2ab(block),block)
+    if "_door" in name: return getFromTable(door_table,"oak_door"+open2ab(block),block)
 
     if "_stained_glass_pane" in name: return ("xpanes:pane_flat",15,cardinal2facedir(block))
     if "_stained_glass" in name: return ("default:glass",15,0)
@@ -53,12 +57,12 @@ def getFromTable(table,name,block):
     param0,param1,param2 = table[name]
     if callable(param2): return (param0,param1,param2(block))
     return param0,param1,param2
-
+        
 def cardinal2facedir(block):
     return block['north'] and 4 or block['south'] and 8 or block['east'] and 12 or block['west'] and 16
 
 def type2facedir(block):
-    return {"bottom":0,"top":20}[block["type"]]
+    return {"bottom":0,"top":20,"double":0}[block["type"]]
 
 def facing2facedir(block):
     return {"north":0,"east":1,"south":2,"west":3}[block["facing"]]
@@ -74,6 +78,9 @@ def shape2stair(block):
 
 def level2flowingliquid(block):
     return int(block["level"])
+
+def open2ab(block):
+    return block["open"] == "false" and "_a" or "_b"
      
 ############
 #  TABLES  #
@@ -92,8 +99,8 @@ default_table = {
     "":("ignore",15,0),
     "air":("air",15,0),
     "cave_air":("air",15,0),
-    "":("beds:bed_bottom",0,0),
-    "":("beds:bed_top",0,0),
+    #"":("beds:bed_bottom",0,0),
+    #"":("beds:bed_top",0,0),
     "":("beds:fancy_bed_bottom",0,0),
     "":("beds:fancy_bed_top",0,0),
     "":("bones:bones",0,0),
@@ -103,8 +110,8 @@ default_table = {
     "":("butterflies:hidden_butterfly_red",0,0),
     "":("butterflies:hidden_butterfly_violet",0,0),
     "":("butterflies:hidden_butterfly_white",0,0),
-    "":("carts:brakerail",0,0),
-    "":("carts:powerrail",0,0),
+    "activator_rail":("carts:brakerail",0,0),
+    "powered_rail":("carts:powerrail",0,0),
     "rail":("carts:rail",15,0),
     "":("default:acacia_bush_leaves",0,0),
     "":("default:acacia_bush_sapling",0,0),
@@ -130,7 +137,7 @@ default_table = {
     "":("default:bush_sapling",0,0),
     "":("default:bush_stem",0,0),
     "cactus":("default:cactus",0,0),
-    "":("default:cave_ice",0,0),
+    "packed_ice":("default:cave_ice",0,0),
     "chest":("default:chest",0,0),
     "":("default:chest_locked",0,0),
     "":("default:chest_locked_open",0,0),
@@ -156,15 +163,17 @@ default_table = {
     "":("default:desert_sandstone",0,0),
     "smooth_sandstone":("default:desert_sandstone_block",0,0),
     "":("default:desert_sandstone_brick",0,0),
-    "":("default:desert_stone",0,0),
-    "":("default:desert_stone_block",0,0),
+    "red_sandstone":("default:desert_stone",0,0),
+    "smooth_red_sandstone":("default:desert_stone_block",0,0),
+    "cut_red_sandstone":("default:desert_stone_block",0,0),
+    "chinseled_red_sandstone":("default:desert_stone_block",0,0),
     "":("default:desert_stonebrick",0,0),
-    "":("default:diamondblock",0,0),
+    "diamond_block":("default:diamondblock",0,0),
     "dirt":("default:dirt",0,0),
     "":("default:dirt_with_coniferous_litter",0,0),
     "":("default:dirt_with_dry_grass",0,0),
     "grass_block":("default:dirt_with_grass",0,0),
-    "":("default:dirt_with_grass_footsteps",0,0),
+    "grass_path":("default:dirt_with_grass_footsteps",0,0),
     "":("default:dirt_with_rainforest_litter",0,0),
     "":("default:dirt_with_snow",0,0),
     "":("default:dry_dirt",0,0),
@@ -199,6 +208,7 @@ default_table = {
     #"":("default:grass_4",15,0),
     #"":("default:grass_5",15,0),
     "gravel":("default:gravel",0,0),
+    "blue_ice":("default:ice",0,0),   
     "ice":("default:ice",0,0),
     "tall_grass":("default:junglegrass",15,0),
     "jungle_leaves":("default:jungleleaves",15,0),
@@ -210,17 +220,23 @@ default_table = {
     "":("default:large_cactus_seedling",0,0),
     "":("default:lava_flowing",0,0),
     "lava":("default:lava_source",255,level2flowingliquid),
+    "dark_oak_leaves":("default:leaves",15,0),
     "oak_leaves":("default:leaves",15,0),
     "":("default:marram_grass_1",0,0),
     "":("default:marram_grass_2",0,0),
     "":("default:marram_grass_3",0,0),
-    "":("default:mese",0,0),
+    "redstone_block":("default:mese",0,0),
     "":("default:mese_post_light",0,0),
     "":("default:meselamp",0,0),
+    "infested_mossy_stone_bricks":("default:mossycobble",0,0),
+    "infested_stone":("default:mossycobble",0,0),
+    "infested_stone_bricks":("default:mossycobble",0,0),
     "mossy_stone_bricks":("default:mossycobble",0,0),
+    "mossy_cobblestone":("default:mossycobble",0,0),
+    "bedrock":("default:obsidian",0,0),
     "obsidian":("default:obsidian",0,0),
     "":("default:obsidian_block",0,0),
-    "":("default:obsidian_glass",0,0),
+    "beacon":("default:obsidian_glass",0,0),
     "":("default:obsidianbrick",0,0),
     "sugar_cane":("default:papyrus",15,0),
     "":("default:permafrost",0,0),
@@ -242,9 +258,11 @@ default_table = {
     "cut_sandstone":("default:sandstone_block",0,0),
     "smooth_sandstone":("default:sandstone_block",0,0),
     "":("default:sandstonebrick",0,0),
+    "dark_oak_sapling":("default:sapling",0,0),
     "oak_sapling":("default:sapling",0,0),
     "":("default:sign_wall_steel",0,0),
-    "sign":("default:sign_wall_wood",0,facing2wallmounted),
+    "spruce_wall_sign":("default:sign_wall_wood",15,facing2wallmounted),
+    "sign":("default:sign_wall_wood",15,facing2wallmounted),
     "":("default:silver_sand",0,0),
     "diorite":("default:silver_sandstone",0,0),
     "polished_diorite":("default:silver_sandstone_block",0,0),
@@ -265,12 +283,14 @@ default_table = {
     "stone_bricks":("default:stonebrick",0,0),
     "cracked_stone_bricks":("default:stonebrick",0,0),
     "":("default:tinblock",0,0),
-    "torch":("default:torch",255,facing2wallmounted),
+    "torch":("default:torch",255,0),
     #"":("default:torch_ceiling",0,0),
     "wall_torch":("default:torch_wall",255,facing2wallmounted),
+    "dark_sapling":("default:sapling",0,0),
     "oak_log":("default:tree",0,0),
     #"":("default:water_flowing",15,level2flowingliquid),
     "water":("default:water_source",15,level2flowingliquid),
+    "dark_oak_sapling":("default:sapling",0,0),
     "oak_planks":("default:wood",0,0),
     "":("farming:cotton_1",0,0),
     "":("farming:cotton_2",0,0),
@@ -286,7 +306,7 @@ default_table = {
     "":("farming:dry_soil_wet",0,0),
     "":("farming:seed_cotton",0,0),
     "":("farming:seed_wheat",0,0),
-    "":("farming:soil",0,0),
+    "podzol":("farming:soil",0,0),
     "":("farming:soil_wet",0,0),
     "":("farming:straw",0,0),
     #"":("farming:wheat_1",0,0),
@@ -303,6 +323,7 @@ default_table = {
     "":("fireflies:firefly_bottle",0,0),
     "":("fireflies:hidden_firefly",0,0),
     "":("flowers:chrysanthemum_green",15,0),
+    "lily_of_the_valley":("flowers:dandelion_white",15,0),
     "azure_bluet":("flowers:dandelion_white",15,0),
     "oxeye_daisy":("flowers:dandelion_white",15,0),
     "dandelion":("flowers:dandelion_yellow",15,0),
@@ -326,24 +347,60 @@ default_table = {
     "":("vessels:glass_bottle",0,0),
     "":("vessels:shelf",0,0),
     "":("vessels:steel_bottle",0,0),
+    "cobblestone_wall":("walls:cobble",15,0),
     "stone_brick_wall":("walls:cobble",15,0),
-    "":("walls:desertcobble",0,0),
-    "":("walls:mossycobble",0,0),
-    "":("wool:black",0,0),
-    "":("wool:blue",0,0),
-    "":("wool:brown",0,0),
-    "":("wool:cyan",0,0),
-    "":("wool:dark_green",0,0),
-    "":("wool:dark_grey",0,0),
-    "":("wool:green",0,0),
-    "":("wool:grey",0,0),
-    "":("wool:magenta",0,0),
-    "":("wool:orange",0,0),
-    "":("wool:pink",0,0),
-    "":("wool:red",0,0),
-    "":("wool:violet",0,0),
-    "":("wool:white",0,0),
-    "":("wool:yellow",0,0),
+    "andesite_wall":("walls:cobble",15,0),
+    "red_sandstone_wall":("walls:desertcobble",15,0),
+    "brick_wall":("walls:desertcobble",15,0),
+    "mossy_cobblestone_wall":("walls:mossycobble",0,0),
+    "black_concrete":("wool:black",0,0),
+    "black_wool":("wool:black",0,0),
+    "black_terracotta":("wool:black",0,0),
+    "blue_concrete":("wool:blue",0,0),
+    "blue_wool":("wool:blue",0,0),
+    "blue_terracotta":("wool:blue",0,0),
+    "brown_concrete":("wool:brown",0,0),
+    "brown_wool":("wool:brown",0,0),
+    "brown_terracotta":("wool:brown",0,0),
+    "cyan_concrete":("wool:cyan",0,0),
+    "cyan_wool":("wool:cyan",0,0),
+    "cyan_terracotta":("wool:cyan",0,0),
+    "dark_concrete":("wool:dark_green",0,0),
+    "dark_wool":("wool:dark_green",0,0),
+    "dark_terracotta":("wool:dark_green",0,0),
+    "dark_concrete":("wool:dark_grey",0,0),
+    "dark_wool":("wool:dark_grey",0,0),
+    "dark_terracotta":("wool:dark_grey",0,0),
+    "green_concrete":("wool:green",0,0),
+    "green_wool":("wool:green",0,0),
+    "green_terracotta":("wool:green",0,0),
+    "grey_concrete":("wool:grey",0,0),
+    "grey_wool":("wool:grey",0,0),
+    "grey_terracotta":("wool:grey",0,0),
+    "magenta_concrete":("wool:magenta",0,0),
+    "magenta_wool":("wool:magenta",0,0),
+    "magenta_terracotta":("wool:magenta",0,0),
+    "magenta_concrete":("wool:magenta",0,0),
+    "magenta_wool":("wool:magenta",0,0),
+    "magenta_terracotta":("wool:magenta",0,0),
+    "orange_concrete":("wool:orange",0,0),
+    "orange_wool":("wool:orange",0,0),
+    "orange_terracotta":("wool:orange",0,0),
+    "pink_concrete":("wool:pink",0,0),
+    "pink_wool":("wool:pink",0,0),
+    "pink_terracotta":("wool:pink",0,0),
+    "red_concrete":("wool:red",0,0),
+    "red_wool":("wool:red",0,0),
+    "red_terracotta":("wool:red",0,0),
+    "purple_concrete":("wool:violet",0,0),
+    "purple_wool":("wool:violet",0,0),
+    "purple_terracotta":("wool:violet",0,0),
+    "white_concrete":("wool:white",0,0),
+    "white_wool":("wool:white",0,0),
+    "white_terracotta":("wool:white",0,0),
+    "yellow_concrete":("wool:yellow",0,0),
+    "yellow_wool":("wool:yellow",0,0),
+    "yellow_terracotta":("wool:yellow",0,0),
     "":("xpanes:bar",0,0),
     "iron_bars":("xpanes:bar_flat",15,cardinal2facedir),
     "":("xpanes:door_steel_bar_a",0,0),
@@ -360,14 +417,15 @@ stairs_translation_array = [
     ("_slab" , ""),
     ("_stairs" , ""),
     ("oak" , "wood"),
-    ("spruce" , "pine"),
-    ("birch" , "aspen"),
+    ("spruce" , "pine_wood"),
+    ("birch" , "aspen_wood"),
     ("jungle" , "junglewood"),
+    ("acacia" , "acacia_wood"),
     ("dark_" , ""),
-    ("pietrified_" , ""),
+    ("petrified_" , ""),
     ("cobblestone" , "cobble"),
     ("red" , "desert"),
-    ("purpur" , "gold"),
+    ("purpur" , "goldblock"),
     ("prismarine" , "ice"),
     ("ice_brick" , "ice"),
     ("smooth" , "block"),
@@ -377,7 +435,7 @@ stairs_translation_array = [
     ("mossystone_brick" , "mossycobble"),
     ("end_stone_brick" , "copperblock"),
     ("granite" , "desert_cobble"),
-    ("adensite" , "stone"),
+    ("andesite" , "stone"),
     ("diorite" , "silver_sandstone"),
     ("stone_brick" , "stonebrick")
 ]
@@ -563,7 +621,15 @@ door_table = {
 }
 
 quartz_table = {
-    "quartz_block" : ("quartz:block",0,0)
+    "quartz_block" : ("quartz:block",0,0),
+    "smooth_quartz" : ("quartz:block_cube",0,0),
+    "nether_quartz_ore" : ("quartz:quartz_ore",0,0),
+    "chiseled_quartz_block" :("quartz:chiseled",0,0),
+    "quartz_pillar" : ("quartz:pillar",0,0),
+    "quartz_slab" : ("stairs:slab_quartzstair",15,type2facedir),
+    "quartz_stairs" : ("stairs:stair_quartzstair",15,stair2facedir),
+    "smooth_quartz_stairs" : ("stairs:stair_quartzblock",15,stair2facedir),
+    "smooth_quartz_slab" : ("stairs:slab_quartzblock",15,type2facedir),
 }
 
 
@@ -577,8 +643,13 @@ if __name__ == '__main__':
     for line in lines:
         if line[:14] != "Unknown Block ": continue
         block = eval(line[14:])
-        param0,param1,param2 = convertBlock(block)
-        if param0 != "air":
-            print(f"Converted Block ({param0},{param1:02X},{param2:02X})")
+        try:
+            param0,param1,param2 = convertBlock(block)
+            if param0 != "air":
+                print(f"Converted Block ({param0},{param1:02X},{param2:02X})")
+        except Exception as e:
+             print("Conversion of block",block,"failed with",e)
+             raise e
+            
 
 

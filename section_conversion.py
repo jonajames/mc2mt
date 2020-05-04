@@ -30,7 +30,10 @@ def convertSection(section,convert_block_function):
     for y in range(16):
         for z in range(16):
             for x in range(16):
-                itemstring,param1,param2 = convert_block_function(section["blocks"][y*256+z*16+x])
+                try:
+                    itemstring,param1,param2 = convert_block_function(section["blocks"][y*256+z*16+x])
+                except Exception as e:
+                    print("Conversion of block",section["blocks"][y*256+z*16+x],"failed with",e)
                 if itemstring not in converted_section["mappings"]:
                     converted_section["mappings"].append(itemstring)
                 # Coordinates are swapped from XZY to XYZ
