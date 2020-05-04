@@ -2,7 +2,7 @@ def convertSection(section,convert_block_function):
     converted_section = {
         'pos' : 0,
         'param0' : [0]*4096,
-        'param1' : [0]*4096,
+        'param1' : [15]*4096,
         'param2' : [0]*4096,
         'mappings' : [],
     }
@@ -23,7 +23,7 @@ def convertSection(section,convert_block_function):
 
     # Skip if empty
     if section["blocks"].is_empty():
-        converted_section["mappings"] = ["ignore"]
+        converted_section["mappings"] = ["air"]
         return converted_section
 
     # Loop on all blocks
