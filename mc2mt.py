@@ -45,7 +45,7 @@ def conversionWorker(mca_file_queue,json_path,converted_section_queue):
                 blob = writeBlob(converted_section)
                 work_time += time.time() - start_time
                 converted_section_queue.put((pos,blob))
-                print("Conversion",mca_file,"ended")
+            print("Conversion",mca_file,"ended")
     except queue.Empty:
         pass
 
@@ -103,8 +103,8 @@ if __name__ == '__main__':
             'minetest.set_mapgen_params({mgname = "singlenode"})\n' +\
             'minetest.register_on_generated(function(minp, maxp, seed)\n' +\
             '        local vm = minetest.get_voxel_manip(minp, maxp)\n' +\
-            '--      vm:update_lighting(minp, maxp)\n' +\
-            '--      vm:set_lighting({day = 15, night = 0}, minp, maxp)\n' +\
+            '        vm:calc_lighting(minp, maxp)\n' +\
+            '        vm:set_lighting({day = 15, night = 0}, minp, maxp)\n' +\
             '        vm:update_liquids()\n' +\
             '        vm:write_to_map()\n' +\
             'end)\n' +\
@@ -125,7 +125,7 @@ if __name__ == '__main__':
     mca_file_queue = queue.Queue(args.threads)
     conversion_workers = []
     print("Beginning conversion with",args.threads,"workers")
-    for i in range(args.threads)
+    for i in range(args.threads):
         conversion_worker = threading.Thread(
             name = f"conversion_worker_{1}",
             target = conversionWorker,
@@ -134,7 +134,7 @@ if __name__ == '__main__':
         conversion_worker.start()
         conversion_workers.append(conversion_worker)
     for mca_filename in mca_filenames:
-        mca_file_queue.add(args.input+"/region/"+mca_filename)
+        mca_file_queue.put(args.input+"/region/"+mca_filename)
         
     # End
     for conversion_worker in conversion_workers: conversion_worker.join()

@@ -1,42 +1,52 @@
 
 enabled_mods = [
-    "stairs",
-    "quartz",
-    "nether",
+#    "quartz",
+#    "nether",
 ]
 
+air = ("air",15,0)
 unknown_blocks = []
 def convertBlock(block):
     prefix,name = block['name'].split(":")
+    if name == air: return air
 
     if name in default_table:
         return getFromTable(default_table,name,block)
 
     if name in ["granite","diorite","granite","andesite"]:
-        return ("default:stone",255,0)
+        return ("default:stone",0,0)
 
     if "_ore" in name:
         return ("default:stone_with_gold",255,0)
 
-    if "stairs" in enabled_mods:
-        if "_slab" in name:
-            for term,traslation in stairs_translation_array: name.replace(term,translation)
-            newname = "slab_"+name
-            if newname in stairs_valid_array: return ("stairs:"+newname,15,type2facedir(block))
-        if "_stairs" in name:
-            for term,traslation in stairs_translation_array: name.replace(term,translation)
-            newname = "stair_"+shape2stair(block)
-            if newname in stairs_valid_array: return ("stairs:"+newname,15,stair2facedir(block))
-    
+    stairname = name
+    if "_slab" in stairname:
+        for term,translation in stairs_translation_array: stairname = stairname.replace(term,translation)
+        if "slab_"+stairname in stairs_valid_array: return ("stairs:slab_"+stairname,15,type2facedir(block))
+    if "_stairs" in stairname:
+        for term,translation in stairs_translation_array: stairname = stairname.replace(term,translation)
+        stairname = "stair_"+shape2stair(block)+stairname
+        if stairname in stairs_valid_array: return ("stairs:"+stairname,15,stair2facedir(block))
+
+    if "white_bed" == name:
+        if block["part"] == "foot": return ("beds:bed_bottom",0,facing2facedir(block))
+        else: return air
+
+    if "_door" in name:
+        doorname = name + (block["open"] == "false" and "_a" or "_b")
+        if doorname in door_table: return getFromTable(door_table,doorname,block)
+
+    if "_stained_glass_pane" in name: return ("xpanes:pane_flat",15,cardinal2facedir(block))
+    if "_stained_glass" in name: return ("default:glass",15,0)
+            
     if "quartz" in enabled_mods:
-        if name in quartz_table:
-            return getFromTable(quartz_table,name,block)
+        if name in quartz_table: return getFromTable(quartz_table,name,block)
             
     # Unknown Block
     if block not in unknown_blocks:
         unknown_blocks.append(block)
         print("Unknown Block",block)
-    return ("air",0,0)
+    return air
 
 # param conversion
 def getFromTable(table,name,block):
@@ -53,16 +63,17 @@ def type2facedir(block):
 def facing2facedir(block):
     return {"north":0,"east":1,"south":2,"west":3}[block["facing"]]
 
+def facing2wallmounted(block):
+    return {"north":1,"east":2,"south":3,"west":4}[block["facing"]]
+
 def stair2facedir(block):
     return facing2facedir(block) + {"top":0,"bottom":20}[block["half"]]
 
 def shape2stair(block):
-    return {"straight":"","outer_right":"outer","outer_left":"outer","inner_right":"inner","inner_left":"inner"}[blok["shape"]]
+    return {"straight":"","outer_right":"outer_","outer_left":"outer_","inner_right":"inner_","inner_left":"inner_"}[block["shape"]]
 
 def level2flowingliquid(block):
     return int(block["level"])
-
-
      
 ############
 #  TABLES  #
@@ -94,7 +105,7 @@ default_table = {
     "":("butterflies:hidden_butterfly_white",0,0),
     "":("carts:brakerail",0,0),
     "":("carts:powerrail",0,0),
-    "":("carts:rail",0,0),
+    "rail":("carts:rail",15,0),
     "":("default:acacia_bush_leaves",0,0),
     "":("default:acacia_bush_sapling",0,0),
     "":("default:acacia_bush_stem",0,0),
@@ -107,7 +118,7 @@ default_table = {
     "":("default:apple_mark",0,0),
     "birch_leaves":("default:aspen_leaves",15,0),
     "birch_sapling":("default:aspen_sapling",15,0),
-    "birch_log":("default:aspen_tree",15,0),
+    "birch_log":("default:aspen_tree",0,0),
     "birch_planks":("default:aspen_wood",0,0),
     "":("default:blueberry_bush_leaves",0,0),
     "":("default:blueberry_bush_leaves_with_berries",0,0),
@@ -128,7 +139,8 @@ default_table = {
     "":("default:cloud",0,0),
     "":("default:coalblock",0,0),
     "cobblestone":("default:cobble",0,0),
-    "":("default:copperblock",0,0),
+    "end_stone_bricks":("default:copperblock",0,0),
+    "end_stone":("default:copperblock",0,0),
     "bubble_coral_block":("default:coral_brown",0,0),
     "tube_coral_block":("default:coral_cyan",0,0),
     "horn_coral_block":("default:coral_green",0,0),
@@ -142,7 +154,7 @@ default_table = {
     "":("default:desert_cobble",0,0),
     "":("default:desert_sand",0,0),
     "":("default:desert_sandstone",0,0),
-    "":("default:desert_sandstone_block",0,0),
+    "smooth_sandstone":("default:desert_sandstone_block",0,0),
     "":("default:desert_sandstone_brick",0,0),
     "":("default:desert_stone",0,0),
     "":("default:desert_stone_block",0,0),
@@ -164,16 +176,16 @@ default_table = {
     "":("default:dry_grass_5",0,0),
     "":("default:dry_shrub",0,0),
     "":("default:emergent_jungle_sapling",0,0),
-    "":("default:fence_acacia_wood",0,0),
-    "":("default:fence_aspen_wood",0,0),
-    "":("default:fence_junglewood",0,0),
-    "":("default:fence_pine_wood",0,0),
+    "acacia_fence":("default:fence_acacia_wood",0,0),
+    "birch_fence":("default:fence_aspen_wood",0,0),
+    "jungle_fence":("default:fence_junglewood",0,0),
+    "spruce_fence":("default:fence_pine_wood",0,0),
     "":("default:fence_rail_acacia_wood",0,0),
     "":("default:fence_rail_aspen_wood",0,0),
     "":("default:fence_rail_junglewood",0,0),
     "":("default:fence_rail_pine_wood",0,0),
     "":("default:fence_rail_wood",0,0),
-    "":("default:fence_wood",0,0),
+    "oak_fence":("default:fence_wood",0,0),
     #"":("default:fern_1",0,0),
     "fern":("default:fern_2",15,0),
     "large_fern":("default:fern_3",15,0),
@@ -205,7 +217,7 @@ default_table = {
     "":("default:mese",0,0),
     "":("default:mese_post_light",0,0),
     "":("default:meselamp",0,0),
-    "":("default:mossycobble",0,0),
+    "mossy_stone_bricks":("default:mossycobble",0,0),
     "obsidian":("default:obsidian",0,0),
     "":("default:obsidian_block",0,0),
     "":("default:obsidian_glass",0,0),
@@ -221,25 +233,28 @@ default_table = {
     "spruce_sapling":("default:pine_sapling",15,0),
     "spruce_log":("default:pine_tree",0,0),
     "spruce_planks":("default:pine_wood",0,0),
-    "":("default:river_water_flowing",0,0),
-    "water":("default:river_water_source",15,level2flowingliquid),
+    "":("default:river_water_flowing",15,level2flowingliquid),
+    "":("default:river_water_source",15,level2flowingliquid),
     "sand":("default:sand",0,0),
     "":("default:sand_with_kelp",0,0),
     "sandstone":("default:sandstone",0,0),
-    "":("default:sandstone_block",0,0),
+    "chiseled_sandstone":("default:sandstone_block",0,0),
+    "cut_sandstone":("default:sandstone_block",0,0),
+    "smooth_sandstone":("default:sandstone_block",0,0),
     "":("default:sandstonebrick",0,0),
     "oak_sapling":("default:sapling",0,0),
     "":("default:sign_wall_steel",0,0),
-    "":("default:sign_wall_wood",0,0),
+    "sign":("default:sign_wall_wood",0,facing2wallmounted),
     "":("default:silver_sand",0,0),
-    "":("default:silver_sandstone",0,0),
-    "":("default:silver_sandstone_block",0,0),
+    "diorite":("default:silver_sandstone",0,0),
+    "polished_diorite":("default:silver_sandstone_block",0,0),
     "":("default:silver_sandstone_brick",0,0),
-    "":("default:snow",0,0),
-    "":("default:snowblock",0,0),
-    "":("default:steelblock",0,0),
+    "snow":("default:snow",0,0),
+    "snow_block":("default:snowblock",0,0),
+    "iron_block":("default:steelblock",0,0),
     "stone":("default:stone",0,0),
-    "":("default:stone_block",0,0),
+    "polished_andesite":("default:stone_block",0,0),
+    "smooth_stone":("default:stone_block",0,0),
     "coal_ore":("default:stone_with_coal",0,0),
     "copper_ore":("default:stone_with_copper",0,0),
     "diamond_ore":("default:stone_with_diamond",0,0),
@@ -247,38 +262,16 @@ default_table = {
     "iron_ore":("default:stone_with_iron",0,0),
     "redstone_ore":("default:stone_with_mese",0,0),
     "tin_ore":("default:stone_with_tin",0,0),
-    "":("default:stonebrick",0,0),
+    "stone_bricks":("default:stonebrick",0,0),
+    "cracked_stone_bricks":("default:stonebrick",0,0),
     "":("default:tinblock",0,0),
-    "":("default:torch",0,0),
-    "":("default:torch_ceiling",0,0),
-    "":("default:torch_wall",0,0),
+    "torch":("default:torch",255,facing2wallmounted),
+    #"":("default:torch_ceiling",0,0),
+    "wall_torch":("default:torch_wall",255,facing2wallmounted),
     "oak_log":("default:tree",0,0),
-    "":("default:water_flowing",0,0),
-    "":("default:water_source",0,0),
+    #"":("default:water_flowing",15,level2flowingliquid),
+    "water":("default:water_source",15,level2flowingliquid),
     "oak_planks":("default:wood",0,0),
-    "":("doors:door_glass_a",0,0),
-    "":("doors:door_glass_b",0,0),
-    "":("doors:door_obsidian_glass_a",0,0),
-    "":("doors:door_obsidian_glass_b",0,0),
-    "":("doors:door_steel_a",0,0),
-    "":("doors:door_steel_b",0,0),
-    "":("doors:door_wood_a",0,0),
-    "":("doors:door_wood_b",0,0),
-    "":("doors:gate_acacia_wood_closed",0,0),
-    "":("doors:gate_acacia_wood_open",0,0),
-    "":("doors:gate_aspen_wood_closed",0,0),
-    "":("doors:gate_aspen_wood_open",0,0),
-    "":("doors:gate_junglewood_closed",0,0),
-    "":("doors:gate_junglewood_open",0,0),
-    "":("doors:gate_pine_wood_closed",0,0),
-    "":("doors:gate_pine_wood_open",0,0),
-    "":("doors:gate_wood_closed",0,0),
-    "":("doors:gate_wood_open",0,0),
-    "":("doors:hidden",0,0),
-    "":("doors:trapdoor",0,0),
-    "":("doors:trapdoor_open",0,0),
-    "":("doors:trapdoor_steel",0,0),
-    "":("doors:trapdoor_steel_open",0,0),
     "":("farming:cotton_1",0,0),
     "":("farming:cotton_2",0,0),
     "":("farming:cotton_3",0,0),
@@ -296,14 +289,14 @@ default_table = {
     "":("farming:soil",0,0),
     "":("farming:soil_wet",0,0),
     "":("farming:straw",0,0),
-    "":("farming:wheat_1",0,0),
-    "":("farming:wheat_2",0,0),
-    "":("farming:wheat_3",0,0),
-    "":("farming:wheat_4",0,0),
-    "":("farming:wheat_5",0,0),
-    "":("farming:wheat_6",0,0),
-    "":("farming:wheat_7",0,0),
-    "":("farming:wheat_8",0,0),
+    #"":("farming:wheat_1",0,0),
+    #"":("farming:wheat_2",0,0),
+    #"":("farming:wheat_3",0,0),
+    #"":("farming:wheat_4",0,0),
+    #"":("farming:wheat_5",0,0),
+    #"":("farming:wheat_6",0,0),
+    #"":("farming:wheat_7",0,0),
+    "cornflower":("farming:wheat_8",0,0),
     "":("fire:basic_flame",0,0),
     "":("fire:permanent_flame",0,0),
     "":("fireflies:firefly",0,0),
@@ -333,7 +326,7 @@ default_table = {
     "":("vessels:glass_bottle",0,0),
     "":("vessels:shelf",0,0),
     "":("vessels:steel_bottle",0,0),
-    "":("walls:cobble",0,0),
+    "stone_brick_wall":("walls:cobble",15,0),
     "":("walls:desertcobble",0,0),
     "":("walls:mossycobble",0,0),
     "":("wool:black",0,0),
@@ -352,19 +345,20 @@ default_table = {
     "":("wool:white",0,0),
     "":("wool:yellow",0,0),
     "":("xpanes:bar",0,0),
-    "":("xpanes:bar_flat",0,0),
+    "iron_bars":("xpanes:bar_flat",15,cardinal2facedir),
     "":("xpanes:door_steel_bar_a",0,0),
     "":("xpanes:door_steel_bar_b",0,0),
     "":("xpanes:obsidian_pane",0,0),
     "":("xpanes:obsidian_pane_flat",0,0),
     "":("xpanes:pane",0,0),
-    "":("xpanes:pane_flat",0,cardinal2facedir),
+    "glass_pane":("xpanes:pane_flat",15,cardinal2facedir),
     "":("xpanes:trapdoor_steel_bar",0,0),
     "":("xpanes:trapdoor_steel_bar_open",0,0),
 }
 
 stairs_translation_array = [
     ("_slab" , ""),
+    ("_stairs" , ""),
     ("oak" , "wood"),
     ("spruce" , "pine"),
     ("birch" , "aspen"),
@@ -373,18 +367,19 @@ stairs_translation_array = [
     ("pietrified_" , ""),
     ("cobblestone" , "cobble"),
     ("red" , "desert"),
-    ("purpur" : "gold"),
+    ("purpur" , "gold"),
     ("prismarine" , "ice"),
     ("ice_brick" , "ice"),
     ("smooth" , "block"),
     ("cut" , "block"),
     ("polished", "block"),
     ("mossy_" , "mossy"),
-    ("mossystone_brick","mossycobble"),
-    ("end_stone","silver_sandstone"),
-    ("granite","desert_cobble"),
-    ("adensite","stone"),
-    ("diorite","cobble"),
+    ("mossystone_brick" , "mossycobble"),
+    ("end_stone_brick" , "copperblock"),
+    ("granite" , "desert_cobble"),
+    ("adensite" , "stone"),
+    ("diorite" , "silver_sandstone"),
+    ("stone_brick" , "stonebrick")
 ]
 
 stairs_valid_array = [
@@ -541,6 +536,49 @@ stairs_valid_array = [
     "stair_outer_wood",
 ]
 
+door_table = {
+    "":("doors:door_glass_a",15,facing2facedir),
+    "":("doors:door_glass_b",15,facing2facedir),
+    "":("doors:door_obsidian_glass_a",15,facing2facedir),
+    "":("doors:door_obsidian_glass_b",15,facing2facedir),
+    "iron_door_a":("doors:door_steel_a",15,facing2facedir),
+    "iron_foor_b":("doors:door_steel_b",15,facing2facedir),
+    "oak_door_a":("doors:door_wood_a",15,facing2facedir),
+    "oak_door_b":("doors:door_wood_b",15,facing2facedir),
+    "":("doors:gate_acacia_wood_closed",15,facing2facedir),
+    "":("doors:gate_acacia_wood_open",15,facing2facedir),
+    "":("doors:gate_aspen_wood_closed",15,facing2facedir),
+    "":("doors:gate_aspen_wood_open",15,facing2facedir),
+    "":("doors:gate_junglewood_closed",15,facing2facedir),
+    "":("doors:gate_junglewood_open",15,facing2facedir),
+    "":("doors:gate_pine_wood_closed",15,facing2facedir),
+    "":("doors:gate_pine_wood_open",15,facing2facedir),
+    "":("doors:gate_wood_closed",15,facing2facedir),
+    "":("doors:gate_wood_open",15,facing2facedir),
+    "":("doors:hidden",15,facing2facedir),
+    "":("doors:trapdoor",15,facing2facedir),
+    "":("doors:trapdoor_open",15,facing2facedir),
+    "":("doors:trapdoor_steel",15,facing2facedir),
+    "":("doors:trapdoor_steel_open",15,facing2facedir),
+}
+
 quartz_table = {
     "quartz_block" : ("quartz:block",0,0)
 }
+
+
+if __name__ == '__main__':
+    print("Reading unknown blocks from stdin and testing conversion")
+    lines = []
+    converted = []
+    while not lines or lines[-1]:
+        try: lines.append(input())
+        except EOFError: break
+    for line in lines:
+        if line[:14] != "Unknown Block ": continue
+        block = eval(line[14:])
+        param0,param1,param2 = convertBlock(block)
+        if param0 != "air":
+            print(f"Converted Block ({param0},{param1:02X},{param2:02X})")
+
+
