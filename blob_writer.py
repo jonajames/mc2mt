@@ -6,10 +6,11 @@ def writeBlob(converted_section):
     writeU32 = lambda out,u32: out.write(bytes([(u32>>24)&0xff,(u32>>16)&0xff,(u32>>8)&0xff,u32&0xff]))
 
     out = io.BytesIO()
-    writeU8(out, 25)   # Version
-    writeU8(out, 0x14) # flags
-    writeU8(out, 2)    # content_width
-    writeU8(out, 2)    # params_width
+    writeU8(out, 27)      # Version 27
+    writeU8(out, 0b0110)  # flags
+    writeU16(out, 0xF000) # recompute light
+    writeU8(out, 2)       # content_width
+    writeU8(out, 2)       # params_width
 
     # Node Data
     node_data = io.BytesIO()
