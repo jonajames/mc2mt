@@ -1,7 +1,7 @@
 from block_conversion import convertBlock
 
 def coord(z,y,x):
-    return (z<<8) | (y<<4) | (15-x) 
+    return (z<<8) | (y<<4) | x 
 
 def convertSection(section):
     converted_section = {
@@ -28,7 +28,7 @@ def convertSection(section):
         for z in range(16):
             for x in range(16):
                 # Convert block
-                itemstring,param1,param2 = convertBlock(section["blocks"][coord(y,z,x)])
+                itemstring,param1,param2 = convertBlock(section["blocks"][coord(y,z,15-x)])
                 if itemstring not in converted_section["mappings"]:
                     converted_section["mappings"].append(itemstring)
                 # Coordinates are swapped from XZY to XYZ
