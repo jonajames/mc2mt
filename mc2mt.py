@@ -11,17 +11,22 @@ from section_conversion import convertSection
 from blob_writer import writeBlob
 
 from quarry.types.nbt import RegionFile
+from quarry.types.buffer import BufferUnderrun
 from quarry.types.registry import OpaqueRegistry
 from quarry.types.chunk import BlockArray
 
 # Iterate over all mca files
 def mcaIterator(mca_path,mca_filename):
-    registry = OpaqueRegistry(None)
+    registry = OpaqueRegistry(64) # log2(max block ID)
     with RegionFile(mca_path+mca_filename) as region_file:
         for chunk_x in range(0,32):
             for chunk_z in range(0,32):
-                try: chunk = region_file.load_chunk(chunk_x,chunk_z)
-                except ValueError as e: continue
+                try:
+                    chunk = region_file.load_chunk(chunk_x,chunk_z)
+                except (ValueError,BufferUnderrun) as e:
+                    if not type(e) is ValueError:
+                        print("Failed loading chunk:",chunk_x,chunk_z,"Reason:",type(e).__name__,e)
+                    continue
                 for section in chunk.value[''].value['Level'].value['Sections'].value:
                     try: blocks = BlockArray.from_nbt(section,registry)
                     except KeyError as e: continue
