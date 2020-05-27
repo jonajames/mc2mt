@@ -23,11 +23,12 @@ def mcaIterator(mca_path,mca_filename):
             for chunk_z in range(0,32):
                 try:
                     chunk = region_file.load_chunk(chunk_x,chunk_z)
-                except (ValueError,BufferUnderrun) as e:
-                    if not type(e) is ValueError:
+                    sections = chunk.value[''].value['Level'].value['Sections'].value
+                except (KeyError,ValueError,BufferUnderrun) as e:
+                    if type(e) is BufferUnderrun:
                         print("Failed loading chunk:",chunk_x,chunk_z,"Reason:",type(e).__name__,e)
                     continue
-                for section in chunk.value[''].value['Level'].value['Sections'].value:
+                for section in sections:
                     try: blocks = BlockArray.from_nbt(section,registry)
                     except KeyError as e: continue
                     yield {

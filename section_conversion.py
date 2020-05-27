@@ -14,7 +14,7 @@ def convertSection(section):
     
     # Convert block coordinates
     r,chunk_x,chunk_z,mca = section["mca"].split(".")
-    chunk_x = (-int(chunk_x) << 5) | (31-section['x']) # X axis is swapped
+    chunk_x = (-int(chunk_x) << 5) | (31-section['x']) # X axis is flipped
     chunk_z = (int(chunk_z) << 5) | section['z']
     converted_section["pos"] = (chunk_x,section['y'],chunk_z)
 
@@ -28,7 +28,11 @@ def convertSection(section):
         for z in range(16):
             for x in range(16):
                 # Convert block
-                itemstring,param1,param2 = convertBlock(section["blocks"][coord(y,z,15-x)])
+                block = section["blocks"][coord(y,z,15-x)] # X axis is flipped
+                try:
+                    itemstring,param1,param2 = convertBlock(block)
+                except Exception as e:
+                    print("Failed converting block:",block,"\n\tReason:",type(e).__name__,e)
                 if itemstring not in converted_section["mappings"]:
                     converted_section["mappings"].append(itemstring)
                 # Coordinates are swapped from XZY to XYZ

@@ -2,25 +2,34 @@
 enable_guessing = True
 enabled_mods = [
     "xdecor",
-    "quartz",
-    "nether",
+#    "quartz",
+#    "nether",
 #    "bedrock",
     "stained_glass",
+    "liquids",
     "carpet",
     "mesecons",
 #    "hardenedclay",
+
 ]
 
 unknown_blocks = []
 def convertBlock(block):
     prefix,name = block['name'].split(":")
     if name == "air": return ("air",15,0)
+    if name == "stone": return ("default:stone",0,0)
 
     # Enabled Mods
+    if "liquids" in enabled_mods:
+        if name == "lava": return ("default:lava_source",255,level2flowingliquid(block))
+        if name == "water": return ("default:river_water_source",15,level2flowingliquid(block))
+        if name == "kelp": return ("default:river_water_source",15,7)
+        if name == "kelp_plant": return ("default:water_source",15,7)
+        
     if "stained_glass" in enabled_mods:
         if "_stained_glass_pane" in name: return ("xpanes:pane_flat",15,cardinal2facedir(block))
         if "_stained_glass" in name: return ("default:glass",15,0)
-            
+        
     if "quartz" in enabled_mods:
         if name in quartz_table: return getFromTable(quartz_table,name,block)
 
@@ -41,10 +50,14 @@ def convertBlock(block):
 
     if "xdecor" in enabled_mods:
         if name in xdecor_table: return getFromTable(xdecor_table,name,block)
-
+        
     # Special cases
     if name in materials_table:
         return ("default:"+materials_table[name],0,0)
+
+    if "_block" == name[-6:]:
+        if name[:-6] in materials_table:
+            return ("default:"+materials_table[name[:-6]],0,0)
     
     if "_stairs" == name[-7:]:
         if name[:-7] in materials_table:
@@ -55,17 +68,19 @@ def convertBlock(block):
              return ("stairs:slab_"+materials_table[name[:-5]],15,type2facedir(block))
 
     if "_bed" == name[-4:]:
+        # todo fix head
         if block["part"] == "foot": return ("beds:bed_bottom",0,facing2facedir(block))
         else: return ("air",15,0)
  
     if "_door" in name:
         if block["half"] == "upper": return ("air",15,0)
-        if name == "iron_door" : return getFromTable(door_table,"iron_door"+open2ab(block),block)
-        return getFromTable(door_table,"oak_door"+open2ab(block),block)
+        if name == "iron_door" : return getFromTable(door_table,"iron_door",block)
+        return getFromTable(door_table,"oak_door",block)
 
     if "_trapdoor" in name:
-        if name == "iron_trapdoor" : return getFromTable(door_table,"iron_trapdoor"+open2ab(block),block)
-        return  getFromTable(door_table,"oak_trapdoor"+open2ab(block),block)
+        # todo fix rotation
+        if name == "iron_trapdoor" : return getFromTable(door_table,"iron_trapdoor",block)
+        return  getFromTable(door_table,"oak_trapdoor",block)
     
     # Default conversions
     if name in default_table:
@@ -74,43 +89,62 @@ def convertBlock(block):
     for key in guessing_table:
         if key in "^"+name+"^":
             return getFromTable(guessing_table,key,block)
-            
+        
     # Unknown Block
     if block not in unknown_blocks:
         unknown_blocks.append(block)
         print("Unknown Block",block)
     return ("air",15,0)
 
+
 # param conversion
 def getFromTable(table,name,block):
     param0,param1,param2 = table[name]
-    if callable(param2): return (param0,param1,param2(block))
+    if callable(param0): param0 = param0(block)
+    if callable(param1): param1 = param1(block)
+    if callable(param2): param2 = param2(block)
     return param0,param1,param2
-        
-def cardinal2facedir(block):
-    return block['north'] and 4 or block['south'] and 8 or block['east'] and 12 or block['west'] and 16
 
-def type2facedir(block):
-    return {"bottom":0,"top":20,"double":0}[block["type"]]
+def rotation2facedir(b):
+    return {"0":1,"1":1,"2":1,"3":2,"4":2,"5":2,"6":2,"7":3,"8":3,"9":3,"10":3,"11":4,"12":4,"13":4,"14":4,"15":1}[b["rotation"]]
 
-def facing2facedir(block):
-    return {"north":1,"east":2,"south":3,"west":4}[block["facing"]]
+def cardinal2facedir(b):
+    return b['north']=='true' and 0 or b['south']=='true' and 1 or b['east']=='true' and 2 or b['west']=='true' and 3 or 0
 
-def facing2wallmounted(block):
-    return {"north":1,"east":2,"south":3,"west":4}[block["facing"]]
+def cardinalVine2facedir(b):
+    return b['north']=='true' and 5 or b['south']=='true' and 4 or b['east']=='true' and 3 or b['west']=='true' and 2 or b['up']=='true' and 3 or 0
 
-def stair2facedir(block):
-    return {"north":0,"east":1,"south":2,"west":3}[block["facing"]] + {"top":0,"bottom":20}[block["half"]]
+def type2facedir(b):
+    return {"bottom":0,"top":20,"double":0}[b["type"]]
 
-def shape2stair(block):
-    return {"straight":"","outer_right":"outer_","outer_left":"outer_","inner_right":"inner_","inner_left":"inner_"}[block["shape"]]
+def facing2facedir(b):
+    return {"north":2,"east":3,"south":0,"west":1,"up":4,"down":8}[b["facing"]]
 
-def level2flowingliquid(block):
-    return int(block["level"])
+def carpetFacing2facedir(b):
+    return {"north":8,"east":16,"south":4,"west":12}[b["facing"]]
 
-def open2ab(block):
-    return block["open"] == "false" and "_a" or "_b"
-     
+def facing2wallmounted(b):
+    return {"north":4,"east":2,"south":5,"west":3}[b["facing"]]
+
+def stair2facedir(b):
+    if b["shape"] in ["straight","inner_left","outer_left"]:
+        return {"north":4,"east":3,"south":0,"west":1}[b["facing"]] + {"top":20,"bottom":0}[b["half"]]
+    else:
+        return {"north":0,"east":4,"south":1,"west":2}[b["facing"]] + {"top":20,"bottom":0}[b["half"]]
+
+def shape2stair(b):
+    return {"straight":"","outer_right":"outer_","outer_left":"outer_","inner_right":"inner_","inner_left":"inner_"}[b["shape"]]
+
+def level2flowingliquid(b):
+    return int(b["level"])//2
+
+def door2ab(b):
+    return {("true","right"):"_a",("true","left"):"_b",("false","left"):"_a",("false","right"):"_b"}[ (b["open"],b["hinge"]) ]
+
+def door2facedir(b):
+    return ( {"north":2,"east":3,"south":0,"west":1}[b["facing"]] + {"true":0,"false":1}[b["open"]] * {"right":-1,"left":1}[b["hinge"]] ) % 4
+    
+
 ############
 #  TABLES  #
 ############
@@ -188,7 +222,7 @@ default_table = {
     "carrots" : ("default:apple",15,0),
     "cave_air":("air",15,0),
     "chest":("default:chest",15,facing2facedir),
-    "chinseled_red_sandstone":("default:desert_stone_block",0,0),
+    "chiseled_quartz_block":("default:steelblock",0,0),
     "chiseled_red_sandstone":("default:desert_stone",0,0),
     "chiseled_sandstone":("default:sandstone_block",0,0),
     "clay":("default:clay",0,0),
@@ -234,7 +268,7 @@ default_table = {
     "diorite":("default:silver_sandstone",0,0),
     "dirt":("default:dirt",0,0),
     "dragon_head":("bones:bones",0,0),
-    "dried_kelp_block" : ("default:acaia_bush_leaves",15,0),
+    "dried_kelp_block" : ("default:acacia_bush_leaves",15,0),
     "emerald_ore":("default:stone",0,0),
     "end_rod":("default:mese_post_light",0,0),
     "end_stone":("default:copperblock",0,0),
@@ -284,13 +318,10 @@ default_table = {
     "jungle_sign" : ("default:sign_wall_wood",15,1),
     "jungle_slab":("stairs:slab_junglewood",0,0),
     "jungle_stairs":("stairs:stair_junglewood",0,1),
-    "kelp":("default:kelp",0,0),
-    "kelp_plant": ("default:sand_with_kelp",0,0),
     "ladder":("default:ladder_wood",0,facing2wallmounted),
     "lapis_block":("default:diamondblock",0,0),
     "lapis_ore":("default:stone_with_diamond",0,0),
     "large_fern":("default:fern_3",15,0),
-    "lava":("default:lava_source",255,level2flowingliquid),
     "light_blue_wool":("wool:blue",0,0),
     "light_gray_wool":("wool:grey",0,0),
     "lilac":("flowers:viola",15,0),
@@ -313,7 +344,6 @@ default_table = {
     "mycelium":("default:dirt_with_grass",0,0),
     "nether_brick_fence":("default:fence_wood",0,0),
     "nether_brick_slab":("stairs:slab_stonebrick",0,0),
-    "oak_door":("doors:door_wood_b_1",0,2),
     "oak_fence":("default:fence_wood",0,0),
     "oak_fence_gate":("doors:gate_wood_closed",0,2),
     "oak_leaves":("default:leaves",15,0),
@@ -355,11 +385,13 @@ default_table = {
     "purpur_pillar":("wool:violet",0,0),
     "quartz_slab":("stairs:slab_stonebrick",0,0),
     "quartz_stairs":("stairs:stair_quartzblock",0,1),
+    "quartz_pillar":("default:steelblock",0,0),
     "rail":("carts:rail",15,0),
     "red_concrete":("wool:red",0,0),
     "red_glazed_terracotta":("wool:red",0,0),    
     "red_mushroom":("flowers:mushroom_red",15,0),
     "red_mushroom_block" : ("default:leaves",0,0),
+    "red_nether_bricks" : ("default:desert_stonebrick",0,0),
     "red_sand":("default:desert_sand",0,0),
     "red_sandstone":("default:desert_stone",0,0),
     "red_sandstone_slab":("stairs:slab_desert_stone",0,0),
@@ -378,8 +410,8 @@ default_table = {
     "sandstone_slab":("stairs:slab_sandstone",0,0),
     "sandstone_stairs":("stairs:stair_sandstone",0,1),
     "sea_lantern":("default:obsidian_glass",15,0),
-    "sea_pickle":("default:coral_brown",0,0),
-    "seagrass":("default:coral_orange",0,0),
+    "sea_pickle":("default:coral_green",0,0),
+    "seagrass":("default:coral_green",0,0),
     "sign":("default:sign_wall_wood",15,facing2wallmounted),
     "slime_block":("wool:green",0,0),
     "smooth_red_sandstone":("default:desert_stone_block",0,0),
@@ -388,7 +420,7 @@ default_table = {
     "snow":("default:snow",0,0),
     "snow_block":("default:snowblock",0,0),
     "soul_sand":("nether:sand",0,0),
-    "sponge":("farming:wheat",0,0),
+    "sponge":("farming:straw",0,0),
     "spruce_fence":("default:fence_pine_wood",0,0),
     "spruce_fence_gate":("doors:gate_pine_wood_closed",0,2),
     "spruce_leaves":("default:pine_needles",15,0),
@@ -409,7 +441,7 @@ default_table = {
     "sunflower":("flowers:rose",15,0),
     "sweet_berry_bush" : ("default:blueberry_bush_leaves_with_berries",15,0),
     "tall_grass":("default:junglegrass",15,0),
-    "tall_seagrass":("default:coral_orange",0,0),
+    "tall_seagrass":("default:coral_pink",0,0),
     "tin_ore":("default:stone_with_tin",0,0),
     "tnt":("tnt:tnt",0,0),
     "torch":("default:torch",255,1),
@@ -420,7 +452,7 @@ default_table = {
     "wheat" : ("farming:straw",0,0),
     "white_concrete":("wool:white",0,0),
     "white_glazed_terracotta":("wool:white",0,0),
-    "white_stained_glass_pane":("xpanes:pane",0,0),
+    "white_stained_glass_pane":("xpanes:pane",0,cardinal2facedir),
     "white_terracotta":("wool:white",0,0),
     "white_tulip":("flowers:dandelion_white",15,0),
     "white_wool":("wool:white",0,0),
@@ -444,14 +476,14 @@ door_table = {
     "":("doors:gate_wood_closed",15,facing2facedir),
     "":("doors:gate_wood_open",15,facing2facedir),
     "":("doors:hidden",15,facing2facedir),
-    "iron_door_a":("doors:door_steel_a",15,facing2facedir),
-    "iron_foor_b":("doors:door_steel_b",15,facing2facedir),
-    "iron_trapdoor_a":("doors:trapdoor_steel",15,facing2facedir),
-    "iron_trapdoor_b":("doors:trapdoor_steel_open",15,facing2facedir),
-    "oak_door_a":("doors:door_wood_a",15,facing2facedir),
-    "oak_door_b":("doors:door_wood_b",15,facing2facedir),
-    "oak_trapdoor_a":("doors:trapdoor",15,facing2facedir),
-    "oak_trapdoor_b":("doors:trapdoor_open",15,facing2facedir),
+    "iron_door":(lambda b:"doors:door_steel"+door2ab(b),15,door2facedir),
+    "oak_door":(lambda b:"doors:door_wood"+door2ab(b),15,door2facedir),
+    # TODO fix trapdoor
+    # facing: north east south west
+    # open: true false
+    # half: bottom top
+    "iron_trapdoor":("doors:trapdoor_steel_open",15,facing2facedir),
+    "oak_trapdoor":("doors:trapdoor_open",15,facing2facedir),
 }
 
 hardenedclay_table = {
@@ -510,7 +542,7 @@ nether_table = {
     "glowstone":("nether:glowstone",0,0),
     "nether_quartz_ore" : ("nether:glowstone",0,0),
     "nether_wart_block" : ("nether:sand",0,0),
-    "red_nether_bricks" : ("nether:rack_cube",0,0),
+    "red_nether_bricks" : ("nether:rack",0,0),
     "nether_brick" : ("nether:brick_cube",0,0),
     "nether_portal" : ("nether:portal",15,12),
     "end_portal" : ("nether:portal",15,12),
@@ -519,6 +551,7 @@ nether_table = {
 }
 
 mesecons_table = {
+    #todo fix dirs
     "acacia_button":("mesecons_button:button_off",0,8),
     "acacia_pressure_plate":("mesecons_pressureplates:pressure_plate_wood_off",0,0),
     "birch_button":("mesecons_button:button_off",0,8),
@@ -550,58 +583,58 @@ mesecons_table = {
 }
 
 carpet_table = {
-    "black_banner":("carpet:wool_black",0,0),
+    "black_banner":("carpet:wool_black",0,rotation2facedir),
     "black_carpet":("carpet:wool_black",0,0),
-    "black_wall_banner":("carpet:wool_black",0,0),
-    "blue_banner":("carpet:wool_blue",0,0),
+    "black_wall_banner":("carpet:wool_black",0,carpetFacing2facedir),
+    "blue_banner":("carpet:wool_blue",0,rotation2facedir),
     "blue_carpet":("carpet:wool_blue",0,0),
-    "blue_wall_banner":("carpet:wool_blue",0,0),
-    "brown_banner":("carpet:wool_brown",0,0),
+    "blue_wall_banner":("carpet:wool_blue",0,carpetFacing2facedir),
+    "brown_banner":("carpet:wool_brown",0,rotation2facedir),
     "brown_carpet":("carpet:wool_brown",0,0),
-    "brown_wall_banner":("carpet:wool_brown",0,0),
-    "cyan_banner":("carpet:wool_cyan",0,0),
+    "brown_wall_banner":("carpet:wool_brown",0,carpetFacing2facedir),
+    "cyan_banner":("carpet:wool_cyan",0,rotation2facedir),
     "cyan_carpet":("carpet:wool_cyan",0,0),
-    "cyan_wall_banner":("carpet:wool_cyan",0,0),
-    "gray_banner":("carpet:wool_dark_grey",0,0),
+    "cyan_wall_banner":("carpet:wool_cyan",0,carpetFacing2facedir),
+    "gray_banner":("carpet:wool_dark_grey",0,rotation2facedir),
     "gray_carpet":("carpet:wool_dark_grey",0,0),
-    "gray_wall_banner":("carpet:wool_dark_grey",0,0),
-    "green_banner":("carpet:wool_dark_green",0,0),
+    "gray_wall_banner":("carpet:wool_dark_grey",0,carpetFacing2facedir),
+    "green_banner":("carpet:wool_dark_green",0,rotation2facedir),
     "green_carpet":("carpet:wool_dark_green",0,0),
-    "green_wall_banner":("carpet:wool_dark_green",0,0),
-    "light_blue_banner":("carpet:wool_blue",0,0),
+    "green_wall_banner":("carpet:wool_dark_green",0,carpetFacing2facedir),
+    "light_blue_banner":("carpet:wool_blue",0,rotation2facedir),
     "light_blue_carpet":("carpet:wool_blue",0,0),
-    "light_blue_wall_banner":("carpet:wool_blue",0,0),
-    "light_gray_banner":("carpet:wool_grey",0,0),
+    "light_blue_wall_banner":("carpet:wool_blue",0,carpetFacing2facedir),
+    "light_gray_banner":("carpet:wool_grey",0,rotation2facedir),
     "light_gray_carpet":("carpet:wool_grey",0,0),
-    "light_gray_wall_banner":("carpet:wool_grey",0,0),
-    "lime_banner":("carpet:wool_green",0,0),
+    "light_gray_wall_banner":("carpet:wool_grey",0,carpetFacing2facedir),
+    "lime_banner":("carpet:wool_green",0,rotation2facedir),
     "lime_carpet":("carpet:wool_green",0,0),
-    "lime_wall_banner":("carpet:wool_green",0,0),
-    "magenta_banner":("carpet:wool_magenta",0,0),
+    "lime_wall_banner":("carpet:wool_green",0,carpetFacing2facedir),
+    "magenta_banner":("carpet:wool_magenta",0,rotation2facedir),
     "magenta_carpet":("carpet:wool_magenta",0,0),
-    "magenta_wall_banner":("carpet:wool_magenta",0,0),
-    "orange_banner":("carpet:wool_orange",0,0),
+    "magenta_wall_banner":("carpet:wool_magenta",0,carpetFacing2facedir),
+    "orange_banner":("carpet:wool_orange",0,rotation2facedir),
     "orange_carpet":("carpet:wool_orange",0,0),
-    "orange_wall_banner":("carpet:wool_orange",0,0),
-    "pink_banner":("carpet:wool_pink",0,0),
+    "orange_wall_banner":("carpet:wool_orange",0,carpetFacing2facedir),
+    "pink_banner":("carpet:wool_pink",0,rotation2facedir),
     "pink_carpet":("carpet:wool_pink",0,0),
-    "pink_wall_banner":("carpet:wool_pink",0,0),
-    "purple_banner":("carpet:wool_violet",0,0),
+    "pink_wall_banner":("carpet:wool_pink",0,carpetFacing2facedir),
+    "purple_banner":("carpet:wool_violet",0,rotation2facedir),
     "purple_carpet":("carpet:wool_violet",0,0),
-    "purple_wall_banner":("carpet:wool_violet",0,0),
-    "red_banner":("carpet:wool_red",0,0),
+    "purple_wall_banner":("carpet:wool_violet",0,carpetFacing2facedir),
+    "red_banner":("carpet:wool_red",0,rotation2facedir),
     "red_carpet":("carpet:wool_red",0,0),
-    "red_wall_banner":("carpet:wool_red",0,0),
-    "white_banner":("carpet:wool_white",0,0),
+    "red_wall_banner":("carpet:wool_red",0,carpetFacing2facedir),
+    "white_banner":("carpet:wool_white",0,rotation2facedir),
     "white_carpet":("carpet:wool_white",0,0),
-    "white_wall_banner":("carpet:wool_white",0,0),
-    "yellow_banner":("carpet:wool_yellow",0,0),
+    "white_wall_banner":("carpet:wool_white",0,carpetFacing2facedir),
+    "yellow_banner":("carpet:wool_yellow",0,rotation2facedir),
     "yellow_carpet":("carpet:wool_yellow",0,0),
-    "yellow_wall_banner":("carpet:wool_yellow",0,0),
+    "yellow_wall_banner":("carpet:wool_yellow",0,carpetFacing2facedir),
 }
 
 xdecor_table = {
-    "anvil" :  ("xdecor:workbench",0,0),
+    "anvil" :  ("xdecor:workbench",0,facing2facedir),
     "bee_nest" : ("xdecor:hive",0,0),
     "bell":("xdecor:lantern",0,0),
     "brewing_stand" : ("xdecor:baricade",15,0),
@@ -613,12 +646,10 @@ xdecor_table = {
     "composter" : ("xdecor:barrel",0,0),
     "conduit":("xdecor:painting_4",0,0),
     "crafting_table" :  ("xdecor:workbench",0,0),
-    "crafting_table":("xdecor:workbench",0,0),
-    "dispenser" : ("xdecor:enderchest",0,0),
+    "dispenser" : ("xdecor:enderchest",0,facing2facedir),
     "enchanting_table" : ("xdecor:enchantment_table",0,0),
-    "enchanting_table":("xdecor:enchantment_table",0,0),
     "end_portal_frame" : ("xdecor:enchantment_table",0,0),
-    "ender_chest":("xdecor:enderchest",0,cardinal2facedir),
+    "ender_chest":("xdecor:enderchest",0,facing2facedir),
     "fletching_table" : ("xdecor:mailbox",0,0),
     "grindstone" : ("xdecor:stone_rune",0,0),
     "hopper" : ("xdecor:cauldron_idle",0,0),
@@ -658,8 +689,8 @@ xdecor_table = {
     "smithing_table" : ("xdecor:multishelf",0,0),
     "spawner" : ("xdecor:cauldron_idle",0,0),
     "stonecutter" : ("xdecor:workbench",0,0),
-    "tripwire_hook":("xdecor:lever_off",0,0),
-    "vine" : ("xdecor:ivy",15,0),
+    "tripwire_hook":("xdecor:lever_off",0,facing2wallmounted),
+    "vine" : ("xdecor:ivy",15,cardinalVine2facedir),
 }
 
 materials_table = {
@@ -687,11 +718,11 @@ materials_table = {
     "prismarine" : "ice",
     "prismarine_brick" : "ice",
     "purpur" : "goldblock",
-    "quartz" : "snowblock",
+    "quartz" : "steelblock",
     "red_nether_brick" : "desert_stonebrick",
     "red_sandstone" : "desert_stone",
     "sandstone" : "sandstone",
-    "smooth_quartz" : "steel",
+    "smooth_quartz" : "steelblock",
     "smooth_red_sandstone" : "desert_stone_block",
     "smooth_sandstone" : "sandstone_block",
     "smooth_stone" : "stone_block",
@@ -703,8 +734,8 @@ materials_table = {
 guessing_table = {
     "_log^" : ("default:tree",0,0),
     "_planks^" :("default:wood",0,0),
-    "_shulker_box^" : ("default:chest",15,0),
-    "_slab^" : ("stairs:slab_wood",15,0),
+    "_shulker_box^" : ("default:chest",15,facing2facedir),
+    "_slab^" : ("stairs:slab_wood",15,type2facedir),
     "_wall^" : ("walls:cobble",15,0),
     "_wall_sign^" : ("default:sign_wall_wood",15,facing2wallmounted),
     "_wood^" : ("default:tree",0,0),
@@ -730,5 +761,3 @@ if __name__ == '__main__':
              print("Conversion of block",block,"failed with",e)
              raise e
             
-
-

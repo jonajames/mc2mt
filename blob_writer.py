@@ -15,8 +15,8 @@ def writeBlob(converted_section):
     # Node Data
     node_data = io.BytesIO()
     for param0 in converted_section["param0"]: writeU16(node_data,param0)                  
-    for param1 in converted_section["param0"]: writeU8(node_data,param1)
-    for param2 in converted_section["param0"]: writeU8(node_data,param2)
+    for param1 in converted_section["param1"]: writeU8(node_data,param1)
+    for param2 in converted_section["param2"]: writeU8(node_data,param2)
     out.write(zlib.compress(node_data.getvalue()))
     node_data.close()
     
