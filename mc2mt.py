@@ -7,6 +7,7 @@ import sqlite3
 import queue
 import threading
 
+import block_conversion
 from section_conversion import convertSection
 from blob_writer import writeBlob
 
@@ -53,14 +54,29 @@ def int64(u):
 # Main
 if __name__ == '__main__':
     # Parse args
-    parser = argparse.ArgumentParser(description='Convert maps from Minecraft to Minetest.',epilog="""
-    This script uses quarry library from barneygale to read mca files.
-    More details at https://quarry.readthedocs.io/en/latest
-    """)
+    parser = argparse.ArgumentParser(
+        description='Convert maps from Minecraft to Minetest.',
+        epilog="""
+        This script uses quarry library from barneygale to read mca files.
+        More details at https://quarry.readthedocs.io/en/latest
+        """)
     parser.add_argument('input',help='Minecraft input world folder')
-    parser.add_argument('output',help='Output folder for the generated world. Must not exist.')
-    #parser.add_argument("--threads","-t",type=int,default=1,help="Number of worker threads")
+    parser.add_argument('output',help='Output folder for the generated world.')
+    for mod in block_conversion.enabled_mods:
+        if block_conversion.enabled_mods[mod]:
+            parser.add_argument('--disable_'+mod,action='store_true',
+                                help='Disable mod '+mod)
+        else:
+            parser.add_argument('--enable_'+mod,action='store_true',
+                                help='Enable mod '+mod)
     args = parser.parse_args()
+    for mod in block_conversion.enabled_mods:
+        if block_conversion.enabled_mods[mod]:
+            if args.__dict__['disable_'+mod]:
+                block_conversion.enabled_mods[mod] = False
+        else:
+            if args.__dict__['enable_'+mod]:
+                block_conversion.enabled_mods[mod] = True
     
     # Create world structure
     try: os.makedirs(args.output)
@@ -94,7 +110,6 @@ if __name__ == '__main__':
     connection = sqlite3.connect(args.output+"/map.sqlite")
     cursor = connection.cursor()
     cursor.execute("CREATE TABLE IF NOT EXISTS `blocks` (`pos` INT NOT NULL PRIMARY KEY, `data` BLOB);")
-    
 
     # Conversion
     num_saved = 0

@@ -1,4 +1,4 @@
-from block_conversion import convertBlock
+import block_conversion
 
 def coord(z,y,x):
     return (z<<8) | (y<<4) | x 
@@ -30,7 +30,7 @@ def convertSection(section):
                 # Convert block
                 block = section["blocks"][coord(y,z,15-x)] # X axis is flipped
                 try:
-                    itemstring,param1,param2 = convertBlock(block)
+                    itemstring,param1,param2 = block_conversion.convertBlock(block)
                 except Exception as e:
                     print("Failed converting block:",block,"\n\tReason:",type(e).__name__,e)
                 if itemstring not in converted_section["mappings"]:

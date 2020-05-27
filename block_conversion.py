@@ -1,17 +1,16 @@
 
 enable_guessing = True
-enabled_mods = [
-    "xdecor",
-#    "quartz",
-#    "nether",
-#    "bedrock",
-    "stained_glass",
-    "liquids",
-    "carpet",
-    "mesecons",
-#    "hardenedclay",
-
-]
+enabled_mods = {
+    "xdecor":True,
+    "quartz":False,
+    "nether":False,
+    "bedrock":False,
+    "stained_glass":True,
+    "liquids":True,
+    "carpet":True,
+    "mesecons":True,
+    "hardenedclay":False,
+}
 
 unknown_blocks = []
 def convertBlock(block):
@@ -20,35 +19,35 @@ def convertBlock(block):
     if name == "stone": return ("default:stone",0,0)
 
     # Enabled Mods
-    if "liquids" in enabled_mods:
+    if enabled_mods["liquids"]:
         if name == "lava": return ("default:lava_source",255,level2flowingliquid(block))
         if name == "water": return ("default:river_water_source",15,level2flowingliquid(block))
         if name == "kelp": return ("default:river_water_source",15,7)
         if name == "kelp_plant": return ("default:water_source",15,7)
         
-    if "stained_glass" in enabled_mods:
+    if enabled_mods["stained_glass"]:
         if "_stained_glass_pane" in name: return ("xpanes:pane_flat",15,cardinal2facedir(block))
         if "_stained_glass" in name: return ("default:glass",15,0)
         
-    if "quartz" in enabled_mods:
+    if enabled_mods["quartz"]:
         if name in quartz_table: return getFromTable(quartz_table,name,block)
 
-    if "nether" in enabled_mods:
+    if enabled_mods["nether"]:
         if name in nether_table: return getFromTable(nether_table,name,block)
 
-    if "hardenedclay" in enabled_mods:
+    if enabled_mods["hardenedclay"]:
         if name in hardenedclay_table: return getFromTable(hardenedclay_table,name,block)
 
-    if "bedrock" in enabled_mods:
+    if enabled_mods["bedrock"]:
         if name == "bedrock": return ("bedrock:bedrock",0,0)
 
-    if "carpet" in enabled_mods:
+    if enabled_mods["carpet"]:
         if name in carpet_table: return getFromTable(carpet_table,name,block)
 
-    if "mesecons" in enabled_mods:
+    if enabled_mods["mesecons"]:
         if name in mesecons_table: return getFromTable(mesecons_table,name,block)
 
-    if "xdecor" in enabled_mods:
+    if enabled_mods["xdecor"]:
         if name in xdecor_table: return getFromTable(xdecor_table,name,block)
         
     # Special cases
@@ -419,7 +418,7 @@ default_table = {
     "smooth_stone":("default:stone_block",0,0),
     "snow":("default:snow",0,0),
     "snow_block":("default:snowblock",0,0),
-    "soul_sand":("nether:sand",0,0),
+    "soul_sand":("deafult:sand",0,0),
     "sponge":("farming:straw",0,0),
     "spruce_fence":("default:fence_pine_wood",0,0),
     "spruce_fence_gate":("doors:gate_pine_wood_closed",0,2),
@@ -739,7 +738,6 @@ guessing_table = {
     "_wall^" : ("walls:cobble",15,0),
     "_wall_sign^" : ("default:sign_wall_wood",15,facing2wallmounted),
     "_wood^" : ("default:tree",0,0),
-    #"_block^" : ("default:goldblock",0,0),
 }
 
 
