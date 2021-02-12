@@ -27,7 +27,8 @@ def mcaIterator(mca_path,mca_filename):
                     sections = chunk.value[''].value['Level'].value['Sections'].value
                 except (KeyError,ValueError,BufferUnderrun) as e:
                     if type(e) is BufferUnderrun:
-                        print("Failed loading chunk:",chunk_x,chunk_z,"Reason:",type(e).__name__,e)
+                        print("Failed loading chunk:",chunk_x,chunk_z)
+                        print("Reason:",type(e).__name__,e)
                     continue
                 for section in sections:
                     try: blocks = BlockArray.from_nbt(section,registry)
@@ -133,7 +134,11 @@ if __name__ == '__main__':
     # End
     connection.commit()
     connection.close()
-    print("All",num_saved,"blocks saved!")
-    print("Biggest chunk is at",*[i*16 for i in biggest_chunk[0]])
+    if num_saved:
+        print("All",num_saved,"blocks saved!")
+        print("Biggest chunk is at",*[i*16 for i in biggest_chunk[0]])
+        
+    else:
+        print("No blocks have been saved. Map version is not supported.")
     elapsed_time = ( time.time()-start_time ) / 60 
     print("Conversion ended in",f"{elapsed_time:.02f}","m")
