@@ -1,0 +1,14 @@
+{
+    "name" : "liquids",
+    "author" : "jonajames",
+    "description": "Water and lava. Uses default:river_water to limit spills.",
+    "enabled" : true,
+    "priority" : 2,
+    "table" : {
+        "bubble_column":["default:river_water_source",15,"@level2flowingliquid"],
+        "water":["default:river_water_source",15,"@level2flowingliquid"],
+        "kelp":["default:river_water_source",15,"@level2flowingliquid"],
+        "kelp_plant":["default:river_water_source",15,"@level2flowingliquid"],
+        "lava":["default:lava_source",15,"@level2flowingliquid"]
+    }
+}

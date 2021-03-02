@@ -1,0 +1,11 @@
+{
+    "name" : "bedrock",
+    "author" : "jonajames",
+    "description": "Bedrock",
+    "download" : "https://github.com/Calinou/bedrock/archive/master.zip",
+    "enabled" : false,
+    "priority" : 1,
+    "table" : {
+        "bedrock": ["bedrock:bedrock",0,0]
+    }
+}

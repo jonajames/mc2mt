@@ -1,0 +1,19 @@
+{
+    "name" : "quartz",
+    "author" : "jonajames",
+    "description": "Quartz blocks",
+    "download" : "https://github.com/minetest-mods/quartz/archive/master.zip",
+    "enabled" : false,
+    "priority" : 1,
+    "table" : {
+        "chiseled_quartz_block" : ["quartz:chiseled",0,0],
+        "nether_quartz_ore": ["quartz:quartz_ore",0,0],
+        "quartz_block" : ["quartz:block",0,0],
+        "quartz_pillar" : ["quartz:pillar",0,0],
+        "quartz_slab" : ["stairs:slab_quartzstair",15,"@type2facedir"],
+        "quartz_stairs" : ["stairs:stair_quartzstair",15,"@stair2facedir"],
+        "smooth_quartz" : ["quartz:block",0,0],
+        "smooth_quartz_slab" : ["stairs:slab_quartzblock",15,"@type2facedir"],
+        "smooth_quartz_stairs" : ["stairs:stair_quartzblock",15,"@stair2facedir"]
+    }
+}

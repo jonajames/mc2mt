@@ -1,144 +1,71 @@
 #!/usr/bin/python
-
 import os
 import time
-import argparse
-import sqlite3
-import queue
-import threading
 
-import block_conversion
-from section_conversion import convertSection
-from blob_writer import writeBlob
+import anvil
 
-from quarry.types.nbt import RegionFile
-from quarry.types.buffer import BufferUnderrun
-from quarry.types.registry import OpaqueRegistry
-from quarry.types.chunk import BlockArray
-
-# Iterate over all mca files
-def mcaIterator(mca_path,mca_filename):
-    registry = OpaqueRegistry(64) # log2(max block ID)
-    with RegionFile(mca_path+mca_filename) as region_file:
-        for chunk_x in range(0,32):
-            for chunk_z in range(0,32):
-                try:
-                    chunk = region_file.load_chunk(chunk_x,chunk_z)
-                    sections = chunk.value[''].value['Level'].value['Sections'].value
-                except (KeyError,ValueError,BufferUnderrun) as e:
-                    if type(e) is BufferUnderrun:
-                        print("Failed loading chunk:",chunk_x,chunk_z)
-                        print("Reason:",type(e).__name__,e)
-                    continue
-                for section in sections:
-                    try: blocks = BlockArray.from_nbt(section,registry)
-                    except KeyError as e: continue
-                    yield {
-                        'mca' : mca_filename,
-                        'x' : chunk_x,
-                        'z' : chunk_z,
-                        'y' : int.from_bytes(section.value['Y'].to_bytes(),'big'),
-                        'blocks' : blocks,
-                    }
-
-#Copied from world_format.txt
-def getBlockAsInteger(p):
-    return int64(p[2]*16777216 + p[1]*4096 + p[0])
-
-def int64(u):
-    while u >= 2**63:
-        u -= 2**64
-    while u <= -2**63:
-        u += 2**64
-    return u
+from mc2mtlib import * 
                     
 # Main
 if __name__ == '__main__':
-    # Parse args
-    parser = argparse.ArgumentParser(
-        description='Convert maps from Minecraft to Minetest.',
-        epilog="""
-        This script uses quarry library from barneygale to read mca files.
-        More details at https://quarry.readthedocs.io/en/latest
-        """)
-    parser.add_argument('input',help='Minecraft input world folder')
-    parser.add_argument('output',help='Output folder for the generated world.')
-    for mod in block_conversion.enabled_mods:
-        if block_conversion.enabled_mods[mod]:
-            parser.add_argument('--disable_'+mod,action='store_true',
-                                help='Disable mod '+mod)
-        else:
-            parser.add_argument('--enable_'+mod,action='store_true',
-                                help='Enable mod '+mod)
-    args = parser.parse_args()
-    for mod in block_conversion.enabled_mods:
-        if block_conversion.enabled_mods[mod]:
-            if args.__dict__['disable_'+mod]:
-                block_conversion.enabled_mods[mod] = False
-        else:
-            if args.__dict__['enable_'+mod]:
-                block_conversion.enabled_mods[mod] = True
-    
-    # Create world structure
-    try: os.makedirs(args.output)
-    except FileExistsError:
-        print("Output folder must not exist.")
-        exit()
-    
-    with open(args.output+"/world.mt",'w') as world_mt:
-        world_mt.write(
-            "enable_damage = false\n" +\
-            "creative_mode = true\n" +\
-            "gameid = minetest\n" +\
-            "backend = sqlite3\n" +\
-            "auth_backend = sqlite3\n" +\
-            "player_backend = sqlite3\n" +\
-            "")
-    os.makedirs(args.output+"/worldmods/mc2mt")
-    with open(args.output+"/worldmods/mc2mt/init.lua",'w') as map_meta:
-        map_meta.write(
-            'minetest.set_mapgen_params({water_level = -2})\n' +\
-            'minetest.set_mapgen_params({chunksize = 1})\n' +\
-            'minetest.set_mapgen_params({mgname = "singlenode"})\n' +\
-            'minetest.register_on_generated(function(minp, maxp, seed)\n' +\
-            '        local vm = minetest.get_voxel_manip(minp, maxp)\n' +\
-            '        vm:update_liquids()\n' +\
-            '        vm:write_to_map()\n' +\
-            'end)\n' +\
-            "")
 
-    # Database
-    connection = sqlite3.connect(args.output+"/map.sqlite")
-    cursor = connection.cursor()
-    cursor.execute("CREATE TABLE IF NOT EXISTS `blocks` (`pos` INT NOT NULL PRIMARY KEY, `data` BLOB);")
+    # Args
+    args = parse_args()
+    if args.disable_all_mods:
+        for mod in block_conversion.mods_enabled:
+            block_conversion.mods_enabled[mod] = False
+    if args.enable_all_mods:
+        for mod in block_conversion.mods_enabled:
+            block_conversion.mods_enabled[mod] = True
+    for mod in block_conversion.mods_enabled:
+        if args.__dict__.get('disable_'+mod,False):
+            block_conversion.mods_enabled[mod] = False
+        if args.__dict__.get('enable_'+mod,False):
+            block_conversion.mods_enabled[mod] = True
+    if args.unknown_as_air:
+        block_conversion.unknown_as_air = True
+    if args.quiet:
+        block_conversion.report_unknown_blocks = False
+    if args.mod:
+            for mod_file in args.mod:
+                block_conversion.load_mod(mod_file)
+                
+    print("Mods enabled in this order:")
+    for p,mod in block_conversion.mods_priority:
+        if block_conversion.mods_enabled[mod]: print(p,mod)
+    print()
 
     # Conversion
-    num_saved = 0
-    start_time = time.time()
-    biggest_chunk = (0,0)
-    num_mca = len(os.listdir(args.input+"/region"))
-    mca_filenames =  os.listdir(args.input+"/region")
-    for i in range(len(mca_filenames)):
-        print("Converting",mca_filenames[i],"file",i,"of",num_mca)
-        for found_section in mcaIterator(args.input+"/region/",mca_filenames[i]):
-            converted_section = convertSection(found_section)
-            pos = converted_section['pos']
-            blob = writeBlob(converted_section)
-            key = getBlockAsInteger(pos)
-            cursor.execute("INSERT INTO blocks VALUES (?,?)",(key,blob))
-            print(f"Blocks saved:",num_saved,end="\r")
-            num_saved += 1
-            if not num_saved%128: connection.commit()
-            if len(blob) > biggest_chunk[1]: biggest_chunk = (pos,len(blob))
-        
+    print("Starting Conversion:")
+    start_time = time.time()    
+    world = minetest_world.MinetestWorld(args.output)    
+    mca_files = os.listdir(os.path.join(args.input,"region"))
+    mca_files = [f for f in mca_files if f[-4:]==".mca" ]
+    cnt_files = 0
+    for mca_file in mca_files:
+        cnt_files += 1
+        mca_path = os.path.join(args.input,"region",mca_file)
+        print("Converting",mca_file,"file",cnt_files,"of",len(mca_files))
+        region = anvil.Region.from_file(mca_path)
+        for chunk_x in range(0,32):
+            for chunk_z in range(0,32):
+                try: chunk = region.get_chunk(chunk_x,chunk_z)
+                except anvil.errors.ChunkNotFound: continue
+                for section_y in range(0,16):
+                    converted = section_conversion.convert_section(
+                        mca_file,
+                        chunk_x,
+                        chunk_z,
+                        section_y,
+                        chunk
+                    )
+                    if not converted: continue
+                    world.insert(converted)
+                    print(f"Map Blocks saved: {world.saved_map_block}",end="\r")
     # End
-    connection.commit()
-    connection.close()
-    if num_saved:
-        print("All",num_saved,"blocks saved!")
-        print("Biggest chunk is at",*[i*16 for i in biggest_chunk[0]])
-        
+    world.save()
+    if world.saved_map_block:
+        print(f"Map Blocks saved: {world.saved_map_block}",end="\n")
     else:
-        print("No blocks have been saved. Map version is not supported.")
-    elapsed_time = ( time.time()-start_time ) / 60 
-    print("Conversion ended in",f"{elapsed_time:.02f}","m")
+        print("No blocks have been saved. Map version is not supported?")
+    print(f"Conversion ended in {(time.time()-start_time)/60:.02f} m")

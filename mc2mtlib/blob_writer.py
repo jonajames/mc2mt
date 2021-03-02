@@ -1,6 +1,6 @@
 import io,zlib
 
-def writeBlob(converted_section):
+def write_blob(converted_section):
     writeU8 = lambda out,u8: out.write(bytes([u8&0xff]))
     writeU16 = lambda out,u16: out.write(bytes([(u16>>8)&0xff,u16&0xff]))
     writeU32 = lambda out,u32: out.write(bytes([(u32>>24)&0xff,(u32>>16)&0xff,(u32>>8)&0xff,u32&0xff]))

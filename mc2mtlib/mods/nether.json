@@ -1,0 +1,24 @@
+{
+    "name" : "nether",
+    "author" : "jonajames",
+    "description": "Nether blocks and portals",
+    "download" : "https://github.com/minetest-mods/nether/archive/master.zip",
+    "enabled" : false,
+    "priority" : 1,
+    "table" : {
+        "nether_brick_slab" : ["stairs:slab_nether_brick",15,"@type2facedir"],
+        "netherrack" : ["nether:rack",0,0],
+        "nether_bricks" : ["nether:brick",0,0],
+        "nether_brick_fence" : ["nether:fence_nether_brick",0,0],
+        "nether_brick_stairs" : ["stairs:stair_nether_brick",0,"@stair2facedir"],
+        "glowstone":["nether:glowstone",0,0],
+        "nether_quartz_ore" : ["nether:glowstone",0,0],
+        "nether_wart_block" : ["nether:sand",0,0],
+        "red_nether_bricks" : ["nether:rack",0,0],
+        "nether_brick" : ["nether:brick_cube",0,0],
+        "nether_portal" : ["nether:portal",15,12],
+        "end_portal" : ["nether:portal",15,12],
+        "red_nether_brick_stairs" : ["stairs:stair_nether_brick",0,"@stair2facedir"],
+        "red_nether_brick_slab" : ["stairs:slab_nether_brick",15,"@type2facedir"]
+    }
+}
