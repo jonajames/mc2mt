@@ -10,6 +10,7 @@ Anvil-Parser library is used to decode nbt format
 https://github.com/matcool/anvil-parser
 
 ## Usage
+
 ```
 usage: mc2mt.py [OPTIONS] input output
 
@@ -33,14 +34,21 @@ This script uses "anvil-parser" library from "matcool" to parse world folders. M
 ```
 
 ## Custom Blocks Definition
-You can provide a JSON file like shown below to implement your custom definition
+
+You can provide a JSON to implement your custom definition.
+
+You can also call function defined in `mc2mtlib/block_functions.py`.
+
+Example are provided in `mc2mtlib/mods`.
+
 ```json
 {
     "table" : {
-        "full_block_id" : ["minetest:itemstring",param1,param2],
-        "beginning_of_id?": ["minetest:itemstring",param1,param2],,
-        "?end_of_id" : ["minetest:itemstring",param1,param2],
+        "full_block_id" : ["minetest:itemstring",0,0],
+        "beginning_of_id?": ["minetest:itemstring",0,0],,
+        "?end_of_id" : ["minetest:itemstring",0,0],
     }
 }
 ```
+
 
