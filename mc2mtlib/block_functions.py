@@ -126,6 +126,7 @@ def material2slab(block):
 
 # Doors
 def door2ab(block):
+    if str(block.properties["hinge"]) == "upper": return "air"
     material = "iron" in block.id and "steel" or "wood"
     return "doors:door_" + material + {
         ("true","right"):"_a",

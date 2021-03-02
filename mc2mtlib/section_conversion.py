@@ -50,7 +50,10 @@ def convert_section(
         for z in range(16):
             for x in range(16):
                 global_y = (section_y << 4) | y
-                block = chunk.get_block(15-x,global_y,z,None,True)
+                try:
+                    block = chunk.get_block(15-x,global_y,z,None,True)
+                except:
+                    continue
                 itemstring,param1,param2 = converted_blocks[block]
                 param0 = converted_itemstring[itemstring]
                 converted_section["param0"][coord(z,y,x)] = param0

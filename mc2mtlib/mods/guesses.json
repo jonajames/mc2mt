@@ -12,7 +12,7 @@
         "?log" : ["default:tree",0,0],
         "?planks" :["default:wood",0,0],
         "?shulker_box" : ["default:chest",15,"@facing2facedir"],
-        "?slab" : ["@marerial2slab",15,"@type2facedir"],
+        "?slab" : ["@material2slab",15,"@type2facedir"],
         "?wall" : ["walls:cobble",15,0],
         "?wall_sign" : ["default:sign_wall_wood",15,"@facing2wallmounted"],
         "?wood" : ["default:tree",0,0]
