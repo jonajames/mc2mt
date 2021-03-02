@@ -1,4 +1,4 @@
-# mc2mtthe one 
+# mc2mt
 Convert maps from Minecraft to Minetest
 
 ## Dependencies
