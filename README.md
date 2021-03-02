@@ -1,13 +1,13 @@
-# mc2mt
+# mc2mtthe one 
 Convert maps from Minecraft to Minetest
 
 ## Dependencies
 
-Quarry library is used to decode nbt format 
+Anvil-Parser library is used to decode nbt format 
 
-`pip install quarry` 
+`pip install anvil-parser` 
 
-https://github.com/barneygale/quarry
+https://github.com/matcool/anvil-parser
 
 ## Usage
 ```
@@ -21,35 +21,26 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  --disable_xdecor      Disable mod xdecor
-  --enable_quartz       Enable mod quartz
-  --enable_nether       Enable mod nether
-  --enable_bedrock      Enable mod bedrock
-  --disable_stained_glass
-                        Disable mod stained_glass
-  --disable_liquids     Disable mod liquids
-  --disable_carpet      Disable mod carpet
-  --disable_mesecons    Disable mod mesecons
-  --enable_hardenedclay
-                        Enable mod hardenedclay
+  -m MOD                Load mod from json file
+  -d                    Disable all mods
+  -e                    Enable all mods
+  -u                    Unknown blocks will be converted to air
+  -q                    Do not report unknown blocks
+  --disable_MOD         Disable mod MOD
+  --enable_MOD          Enable mod MOD
 
-This script uses quarry library from barneygale to read mca files. More details at https://quarry.readthedocs.io/en/latest
+This script uses "anvil-parser" library from "matcool" to parse world folders. More details at https://github.com/matcool/anvil-parser
 ```
 
-## Unknown Block
-
-All unknown block will be replaced with air.
-
-Mods can be enabled/disabled to convert those blocks.
-
-The block conversion is made by [block_conversion.py](block_conversion.py).
-
-Have a look at it and if you want to help improve it open an issue/pull request
-
-## Known Bugs
-
-+ Beds have no top part
-+ Trapdoor rotation is not yet implemented
-+ Some stairs are not rotated correctly
-+ Water and lava behaves differently in MT and may cause spills
+## Custom Blocks Definition
+You can provide a JSON file like shown below to implement your custom definition
+```json
+{
+    "table" : {
+        "full_block_id" : ["minetest:itemstring",param1,param2],
+        "beginning_of_id?": ["minetest:itemstring",param1,param2],,
+        "?end_of_id" : ["minetest:itemstring",param1,param2],
+    }
+}
+```
 
