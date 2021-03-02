@@ -45,7 +45,7 @@ Example are provided in `mc2mtlib/mods`.
 {
     "table" : {
         "full_block_id" : ["minetest:itemstring",0,0],
-        "beginning_of_id?": ["minetest:itemstring",0,0],,
+        "beginning_of_id?": ["minetest:itemstring",0,0],
         "?end_of_id" : ["minetest:itemstring",0,0],
     }
 }
