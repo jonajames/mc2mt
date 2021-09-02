@@ -4,6 +4,7 @@ from .block_functions import *
 report_known_blocks = False
 report_unknown_blocks = True
 unknown_as_air = False
+converted_blocks = {}
 mods_priority = []
 mods_enabled = {}
 mods_table = {}
@@ -49,18 +50,23 @@ def get_from_table(table,block):
     key = find_in_table(table,block.id)
     if not key: return
     param0,param1,param2 = table[key]
-    if type(param0)==str and param0[0]=="@":
-        param0 = (globals()[param0[1:]])(block)
-    if type(param1)==str and param1[0]=="@":
-        param1 = (globals()[param1[1:]])(block)
-    if type(param2)==str and param2[0]=="@":
-        param2 = (globals()[param2[1:]])(block)
+    try:
+        if type(param0)==str and param0[0]=="@":
+            param0 = (globals()[param0[1:]])(block)
+        if type(param1)==str and param1[0]=="@":
+            param1 = (globals()[param1[1:]])(block)
+        if type(param2)==str and param2[0]=="@":
+            param2 = (globals()[param2[1:]])(block)
+    except Exception as e:
+        print_block("ERROR",block)
+        raise e
     return param0,param1,param2
         
-unknown_blocks = []
 def convert_block(block):
+    # Get conversion from cache
     if block.id == "air": return ("air",0,0)
-    if block.id == "stone": return ("default:stone",0,0)
+    if block in converted_blocks:
+        return converted_blocks[block]
 
     # Get conversion from mod
     for priority,mod_name in mods_priority:
@@ -68,15 +74,16 @@ def convert_block(block):
         mod_table = mods_table[mod_name]
         converted = get_from_table(mod_table,block)
         if converted:
+            converted_blocks[block] = converted
             if report_known_blocks: print_block("ConvertedBlock",block)
             return converted
         
     # Unknown block
-    if report_unknown_blocks and block.id not in unknown_blocks:
-        unknown_blocks.append(block.id)
-        print_block("UnknownBlock",block)
-    if unknown_as_air: return ("air",15,0)
-    else: return (f"mc2mt:{block.id}",0,0)    
+    if unknown_as_air: converted = ("air",15,0)
+    else: converted = (f"mc2mt:{block.id}",0,0)
+    converted_blocks[block] = converted
+    if report_unknown_blocks: print_block("UnknownBlock",block)
+    return converted
 
 def print_block(prefix,block):
     properties = {}
