@@ -4,7 +4,7 @@
     "description": "Quartz blocks",
     "download" : "https://github.com/minetest-mods/quartz/archive/master.zip",
     "enabled" : false,
-    "priority" : 1,
+    "priority" : 10,
     "table" : {
         "chiseled_quartz_block" : ["quartz:chiseled",0,0],
         "nether_quartz_ore": ["quartz:quartz_ore",0,0],

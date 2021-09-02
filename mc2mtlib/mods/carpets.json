@@ -4,7 +4,7 @@
     "description": "Carpets and banners",
     "download" : "https://github.com/minetest-mods/carpets/archive/master.zip",
     "enabled" : false,
-    "priority" : 1,
+    "priority" : 10,
     "table" : {
         "black_banner":["carpet:wool_black",0,"@rotation2facedir"],
         "black_carpet":["carpet:wool_black",0,0],

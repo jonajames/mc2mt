@@ -4,7 +4,7 @@
     "description": "Various decorative blocks",
     "download" : "https://github.com/minetest-mods/xdecor/archive/master.zip",
     "enabled" : false,
-    "priority" : 1,
+    "priority" : 10,
     "table" : {
         "anvil" :  ["xdecor:workbench",0,"@facing2facedir"],
         "bee_nest" : ["xdecor:hive",0,0],

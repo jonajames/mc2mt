@@ -4,7 +4,7 @@
     "description": "Bedrock",
     "download" : "https://github.com/Calinou/bedrock/archive/master.zip",
     "enabled" : false,
-    "priority" : 1,
+    "priority" : 10,
     "table" : {
         "bedrock": ["bedrock:bedrock",0,0]
     }

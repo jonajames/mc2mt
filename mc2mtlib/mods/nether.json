@@ -4,7 +4,7 @@
     "description": "Nether blocks and portals",
     "download" : "https://github.com/minetest-mods/nether/archive/master.zip",
     "enabled" : false,
-    "priority" : 1,
+    "priority" : 10,
     "table" : {
         "nether_brick_slab" : ["stairs:slab_nether_brick",15,"@type2facedir"],
         "netherrack" : ["nether:rack",0,0],

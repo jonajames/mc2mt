@@ -3,7 +3,7 @@
     "author" : "jonajames",
     "description": "Default doors and trapdoors.",
     "enabled" : true,
-    "priority" : 100,
+    "priority" : 500,
     "table" : {
         "":["doors:gate_acacia_wood_closed",15,"@facing2facedir"],
         "":["doors:gate_acacia_wood_open",15,"@facing2facedir"],

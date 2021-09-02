@@ -3,7 +3,7 @@
     "author" : "jonajames",
     "description": "Water and lava. Uses default:river_water to limit spills.",
     "enabled" : true,
-    "priority" : 2,
+    "priority" : 20,
     "table" : {
         "bubble_column":["default:river_water_source",15,7],
         "water":["default:river_water_source",15,"@level2flowingliquid"],

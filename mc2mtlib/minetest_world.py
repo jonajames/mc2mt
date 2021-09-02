@@ -28,7 +28,7 @@ class MinetestWorld:
         except FileExistsError:
             pass
 
-        #World mt    
+        #World mt
         with open(os.path.join(path,"world.mt"),'w') as world_mt:
             world_mt.write("\n".join([
                 "enable_damage = false",
@@ -38,7 +38,7 @@ class MinetestWorld:
                 "auth_backend = sqlite3",
                 "player_backend = sqlite3",
             ]))
-            
+
         #Database
         self.connection = sqlite3.connect(os.path.join(path,"map.sqlite"))
         self.connection.execute(" ".join([
@@ -60,31 +60,31 @@ class MinetestWorld:
                 "size":len(blob)
             }
         self.saved_map_block += 1
-            
 
     def save(self):
         modpath = os.path.join(self.path,"worldmods","mc2mt")
+        luapath = os.path.join(self.path,"worldmods","mc2mt","init.lua")
         try: os.makedirs(modpath)
         except: pass
-        x,y,z = [str(i*16) for i in self.biggest_map_block["pos"]]
-        with open(os.path.join(modpath,"init.lua"),'w') as init_lua:
+        x,y,z = [str(8+i*16) for i in self.biggest_map_block["pos"]]
+        with open(luapath,'w') as init_lua:
             init_lua.write("\n".join([
                 "minetest.set_mapgen_params({water_level = -2})",
                 "minetest.set_mapgen_params({chunksize = 1})",
                 "minetest.set_mapgen_params({mgname = \"singlenode\"})",
                 "minetest.register_on_generated(function(minp, maxp, seed)",
-                "        local vm = minetest.get_voxel_manip(minp, maxp)",
-                "        vm:update_liquids()",
-                "        vm:write_to_map()",
+                "    local vm = minetest.get_voxel_manip(minp, maxp)",
+                "    vm:calc_lighting()",
+                "    vm:update_liquids()",
+                "    vm:write_to_map()",
                 "end)",
-                "minetest.register_on_joinplayer(function(player, lastlogin)",
-                "        player:set_pos({",
-                "                x="+x+",",
-                "                y="+y+",",
-                "                z="+z+",",
-                "        })"
-                "end)"
+                "minetest.register_on_newplayer(function(player)",
+                "    player:set_pos({",
+                "        x="+x+",",
+                "        y="+y+",",
+                "        z="+z+",",
+                "    })",
+                "end)",
             ]))
         self.connection.commit()
         self.connection.close()
-    

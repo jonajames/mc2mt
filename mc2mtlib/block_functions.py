@@ -18,7 +18,7 @@ materials = {
     "oak" : "wood",
     "petrified_oak" : "wood",
     "polished_andesite" : "stone_block",
-    "polished_diorite" : "silver_sandstone", 
+    "polished_diorite" : "silver_sandstone",
     "polished_granite" : "desert_stone_block",
     "prismarine" : "ice",
     "prismarine_brick" : "ice",
@@ -49,7 +49,7 @@ def id2material(block):
 
 # Flowing Liquids
 def level2flowingliquid(block):
-    return int(str(block.properties["level"]))//2
+    return int(prop(block,"level"))//2
 
 # Facedir
 def rotation2facedir(block):
@@ -58,37 +58,37 @@ def rotation2facedir(block):
         "3":2,"4":2,"5":2,"6":2,
         "7":3,"8":3,"9":3,"10":3,
         "11":4,"12":4,"13":4,"14":4,
-    }.get(str(block.properties["rotation"]),0)
+    }.get(prop(block,"rotation"),0)
 
 def cardinal2facedir(block):
-    if str(block.properties['north'])=='true': return 0
-    if str(block.properties['south'])=='true': return 1
-    if str(block.properties['east'])=='true': return 2
-    if str(block.properties['west'])=='true': return 3
+    if prop(block,'north')=='true': return 0
+    if prop(block,'south')=='true': return 1
+    if prop(block,'east')=='true': return 2
+    if prop(block,'west')=='true': return 3
     return 0
 
 def cardinalVine2facedir(block):
-    if str(block.properties['north'])=='true': return 5
-    if str(block.properties['south'])=='true': return 4
-    if str(block.properties['east'])=='true': return 3
-    if str(block.properties['west'])=='true': return 2
-    if str(block.properties['up'])=='true': return 0
+    if prop(block,'north')=='true': return 5
+    if prop(block,'south')=='true': return 4
+    if prop(block,'east')=='true': return 3
+    if prop(block,'west')=='true': return 2
+    if prop(block,'up')=='true': return 0
     return 0
 
 def type2facedir(block):
     return {
         "bottom":0,"top":20,"double":0
-    }.get(str(block.properties["type"]),0)
+    }.get(prop(block,"type"),0)
 
 def facing2facedir(block):
     return {
         "north":2,"east":3,"south":0,"west":1,"up":4,"down":8
-    }.get(str(block.properties["facing"]),0)
+    }.get(prop(block,"facing"),0)
 
 def carpetFacing2facedir(block):
     return {
         "north":8,"east":16,"south":4,"west":12
-    }.get(str(block.properties["facing"]),0)
+    }.get(prop(block,"facing"),0)
 
 # Wallmounted
 def facing2wallmounted(block):
@@ -101,15 +101,15 @@ def stair2facedir(block):
     if str(block.properties["shape"]) in ["straight","inner_left","outer_left"]:
         return {
             "north":4,"east":3,"south":0,"west":1
-        }.get(str(block.properties["facing"]),0) + {
+        }.get(prop(block,"facing"),0) + {
             "top":20,"bottom":0
-        }.get(str(block.properties["half"]),0)
+        }.get(prop(block,"half"),0)
     else:
         return {
             "north":0,"east":4,"south":1,"west":2
-        }.get(str(block.properties["facing"]),0) + {
+        }.get(prop(block,"facing"),0) + {
             "top":20,"bottom":0
-        }.get(str(block.properties["half"]),0)
+        }.get(prop(block,"half"),0)
 
 def shape2stair(block):
     return "stairs:stair" + {
@@ -118,7 +118,7 @@ def shape2stair(block):
         "outer_left":"_outer",
         "inner_right":"_inner",
         "inner_left":"_inner"
-    }.get(str(block.properties["shape"]),"") +\
+    }.get(prop(block,"shape"),"") +\
     "_" + id2material(block)
 
 def material2slab(block):
@@ -129,24 +129,21 @@ def door2ab(block):
     if str(block.properties["half"]) == "upper": return "air"
     material = "iron" in block.id and "steel" or "wood"
     return "doors:door_" + material + {
-        ("true","right"):"_a",
-        ("true","left"):"_b",
-        ("false","left"):"_a",
-        ("false","right"):"_b"
-    }.get((str(block.properties["open"]),str(block.properties["hinge"])),"_a")
+        ("true","right"):"_b",
+        ("true","left"):"_a",
+        ("false","left"):"_b",
+        ("false","right"):"_a"
+    }.get((prop(block,"open"),prop(block,"hinge")),"_a")
 
 def door2facedir(block):
     return ( {
         "north":2,"east":3,"south":0,"west":1
-    }.get(str(block.properties["facing"]),0) + {
+    }.get(prop(block,"facing"),0) + {
         "true":0,"false":1
-    }.get(str(block.properties["open"]),0) * {
+    }.get(prop(block,"open"),0) * {
         "right":-1,"left":1
-    }.get(str(block.properties["hinge"]),0) ) % 4
+    }.get(prop(block,"hinge"),0) ) % 4
 
-# Print
-def print_block(prefix,block):
-    properties = {}
-    for p in block.properties:
-        properties[p] = str(block.properties[p])
-    print(f"{prefix}~{block.id}~{properties}")
+# Utilities
+def prop(block,key):
+    return str(block.properties[key])

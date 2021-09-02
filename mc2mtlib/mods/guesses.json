@@ -3,7 +3,7 @@
     "author" : "jonajames",
     "description": "Tries to match blocks of different shapes and material",
     "enabled" : true,
-    "priority" : 100,
+    "priority" : 999,
     "table" : {
         "?stairs" : ["@shape2stair",15,"@stair2facedir"],
         "?block" : ["@id2material",0,0],

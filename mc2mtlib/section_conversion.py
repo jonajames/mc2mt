@@ -33,7 +33,7 @@ def convert_section(
     for block in chunk.stream_blocks(0,section_y,True):
         y = count // 256
         z = count // 16 % 16
-        x = - count % 16
+        x = 15 - ( count % 16 )
         count += 1
         itemstring,param1,param2 = block_conversion.convert_block(block)
         if itemstring not in converted_itemstring:
