@@ -112,12 +112,12 @@ def stair2facedir(block):
         }.get(str(block.properties["half"]),0)
 
 def shape2stair(block):
-    return "stairs:stair_" + {
+    return "stairs:stair" + {
         "straight":"",
-        "outer_right":"outer",
-        "outer_left":"outer",
-        "inner_right":"inner",
-        "inner_left":"inner"
+        "outer_right":"_outer",
+        "outer_left":"_outer",
+        "inner_right":"_inner",
+        "inner_left":"_inner"
     }.get(str(block.properties["shape"]),"") +\
     "_" + id2material(block)
 
@@ -126,7 +126,7 @@ def material2slab(block):
 
 # Doors
 def door2ab(block):
-    if str(block.properties["hinge"]) == "upper": return "air"
+    if str(block.properties["half"]) == "upper": return "air"
     material = "iron" in block.id and "steel" or "wood"
     return "doors:door_" + material + {
         ("true","right"):"_a",
@@ -143,3 +143,10 @@ def door2facedir(block):
     }.get(str(block.properties["open"]),0) * {
         "right":-1,"left":1
     }.get(str(block.properties["hinge"]),0) ) % 4
+
+# Print
+def print_block(prefix,block):
+    properties = {}
+    for p in block.properties:
+        properties[p] = str(block.properties[p])
+    print(f"{prefix}~{block.id}~{properties}")

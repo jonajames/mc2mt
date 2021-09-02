@@ -62,6 +62,7 @@
         "spawner" : ["xdecor:cauldron_idle",0,0],
         "stonecutter" : ["xdecor:workbench",0,0],
         "tripwire_hook" : ["xdecor:lever_off",0,"@facing2wallmounted"],
-        "vine" : ["xdecor:ivy",15,"@cardinalVine2facedir"]
+        "vine" : ["xdecor:ivy",15,"@cardinalVine2facedir"],
+        "water_cauldron" : ["xdecor:cauldron_idle",0,0]
     }
 }

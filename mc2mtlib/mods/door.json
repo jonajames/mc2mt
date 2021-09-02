@@ -18,6 +18,6 @@
         "":["doors:hidden",15,"@facing2facedir"],
         "?door":["@door2ab",15,"@door2facedir"],
         "iron_trapdoor":["doors:trapdoor_steel_open",15,"@facing2facedir"],
-        "oak_trapdoor":["doors:trapdoor_open",15,"@facing2facedir"]
+        "?trapdoor":["doors:trapdoor_open",15,"@facing2facedir"]
     }
 }

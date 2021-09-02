@@ -4,8 +4,8 @@ import time
 
 import anvil
 
-from mc2mtlib import * 
-                    
+from mc2mtlib import *
+
 # Main
 if __name__ == '__main__':
 
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     if args.mod:
             for mod_file in args.mod:
                 block_conversion.load_mod(mod_file)
-                
+
     print("Mods enabled in this order:")
     for p,mod in block_conversion.mods_priority:
         if block_conversion.mods_enabled[mod]: print(p,mod)
@@ -37,8 +37,8 @@ if __name__ == '__main__':
 
     # Conversion
     print("Starting Conversion:")
-    start_time = time.time()    
-    world = minetest_world.MinetestWorld(args.output)    
+    start_time = time.time()
+    world = minetest_world.MinetestWorld(args.output)
     mca_files = os.listdir(os.path.join(args.input,"region"))
     mca_files = [f for f in mca_files if f[-4:]==".mca" ]
     cnt_files = 0
@@ -61,7 +61,7 @@ if __name__ == '__main__':
                     )
                     if not converted: continue
                     world.insert(converted)
-                    print(f"Map Blocks saved: {world.saved_map_block}",end="\r")
+                print(f"Map Blocks saved: {world.saved_map_block}",end="\r")
     # End
     world.save()
     if world.saved_map_block:
