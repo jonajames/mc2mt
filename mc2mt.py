@@ -49,8 +49,12 @@ if __name__ == '__main__':
         region = anvil.Region.from_file(mca_path)
         for chunk_x in range(0,32):
             for chunk_z in range(0,32):
-                try: chunk = region.get_chunk(chunk_x,chunk_z)
-                except anvil.errors.ChunkNotFound: continue
+                try:
+                    chunk = region.get_chunk(chunk_x,chunk_z)
+                except Exception as e:
+                    if type(e) is not anvil.errors.ChunkNotFound:
+                        print(f"ChunkError~{[chunk_x,chunk_z]}~{e}")
+                    continue
                 for section_y in range(0,16):
                     converted = section_conversion.convert_section(
                         mca_file,

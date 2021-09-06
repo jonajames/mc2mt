@@ -16,6 +16,7 @@ def str_mod(name):
     return f"[ {name} ] by {author}\n\t{description}\n\t{download}"
 
 def load_mod(mod_file):
+    if mod_file[-5:] != '.json': return
     mod = {
         'name': 'unknown',
         'author': 'anonymous',
@@ -97,6 +98,8 @@ def print_block(prefix,block):
 
 def str_block(block):
     string = str(block.id) + "~{"
+    if block.properties == {}:
+        return string + " }"
     for p in sorted(block.properties.keys()):
         string += "'" + str(p) + "':'" + str(block.properties[p]) + "', "
     return string[:-2] + "}"

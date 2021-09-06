@@ -94,11 +94,11 @@ def carpetFacing2facedir(block):
 def facing2wallmounted(block):
     return {
         "north":4,"east":2,"south":5,"west":3
-    }.get(str(block.properties["facing"]),0)
+    }.get(prop(block,"facing"),0)
 
 # Stairs
 def stair2facedir(block):
-    if str(block.properties["shape"]) in ["straight","inner_left","outer_left"]:
+    if prop(block,"shape") in ["straight","inner_left","outer_left"]:
         return {
             "north":4,"east":3,"south":0,"west":1
         }.get(prop(block,"facing"),0) + {
@@ -145,5 +145,5 @@ def door2facedir(block):
     }.get(prop(block,"hinge"),0) ) % 4
 
 # Utilities
-def prop(block,key):
-    return str(block.properties[key])
+def prop(block,key,default=None):
+    return str(block.properties.get(key,default))

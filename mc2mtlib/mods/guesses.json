@@ -1,20 +1,21 @@
 {
-    "name" : "guesses",
-    "author" : "jonajames",
-    "description": "Tries to match blocks of different shapes and material",
-    "enabled" : true,
-    "priority" : 999,
-    "table" : {
-        "?stairs" : ["@shape2stair",15,"@stair2facedir"],
-        "?block" : ["@id2material",0,0],
-        "?stained_glass_pane" : ["xpanes:pane_flat",15,"@cardinal2facedir"],
-        "?stained_glass" : ["default:glass",15,0],
-        "?log" : ["default:tree",0,0],
-        "?planks" :["default:wood",0,0],
-        "?shulker_box" : ["default:chest",15,"@facing2facedir"],
-        "?slab" : ["@material2slab",15,"@type2facedir"],
-        "?wall" : ["walls:cobble",15,0],
-        "?wall_sign" : ["default:sign_wall_wood",15,"@facing2wallmounted"],
-        "?wood" : ["default:tree",0,0]
-    }
+  "name" : "guesses",
+  "author" : "jonajames",
+  "description": "Tries to match blocks of different shapes and material",
+  "enabled" : true,
+  "priority" : 999,
+  "table" : {
+    "?stairs" : ["@shape2stair",15,"@stair2facedir"],
+    "?block" : ["@id2material",0,0],
+    "?stained_glass_pane" : ["xpanes:pane_flat",15,"@cardinal2facedir"],
+    "?stained_glass" : ["default:glass",15,0],
+    "?log" : ["default:tree",0,0],
+    "?planks" :["default:wood",0,0],
+    "?shulker_box" : ["default:chest",15,"@facing2facedir"],
+    "?slab" : ["@material2slab",15,"@type2facedir"],
+    "?wall" : ["walls:cobble",15,0],
+    "?wall_sign" : ["default:sign_wall_wood",15,"@facing2wallmounted"],
+    "?wood" : ["default:tree",0,0],
+    "?candle" : ["default:torch",0,1]
+  }
 }
