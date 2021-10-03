@@ -21,8 +21,9 @@ class MinetestWorld:
     saved_map_block = 0
     biggest_map_block = {"pos":(0,0,0),"size":0}
 
-    def __init__(self,path):
+    def __init__(self,path,gameid):
         self.path = path
+        self.gameid = gameid
         try:
             os.makedirs(path)
         except FileExistsError:
@@ -33,7 +34,7 @@ class MinetestWorld:
             world_mt.write("\n".join([
                 "enable_damage = false",
                 "creative_mode = true",
-                "gameid = minetest",
+                "gameid = " + self.gameid,
                 "backend = sqlite3",
                 "auth_backend = sqlite3",
                 "player_backend = sqlite3",
@@ -84,6 +85,10 @@ class MinetestWorld:
                 "        y="+y+",",
                 "        z="+z+",",
                 "    })",
+                "    minetest.set_player_privs(",
+                "        player:get_player_name(),",
+                "        {fly=true,noclip=true}",
+                "    )"
                 "end)",
             ]))
         self.connection.commit()

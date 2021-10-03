@@ -39,6 +39,8 @@ parser.add_argument('--enable_all_mods','-e',action='store_true',
                     help='Enable all mods')
 parser.add_argument('--unknown_as_air','-u',action='store_true',
                     help='Unknown blocks will be converted to air')
+parser.add_argument('--gameid','-g',default="mineclone2",
+                    help='Gameid to use, by default use mineclone2')
 parser.add_argument('--quiet','-q',action='store_true',
                     help='Do not report unknown blocks')
 

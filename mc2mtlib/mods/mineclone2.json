@@ -3,7 +3,7 @@
   "author": "jonajames",
   "description": "To use this mods you have to change game in world.mt",
   "download": "https://git.minetest.land/MineClone2/MineClone2/archive/master.zip",
-  "enabled": false,
+  "enabled": true,
   "priority": 1,
   "table": {
     "?wall_sign": ["mcl_signs:wall_sign",0,0],

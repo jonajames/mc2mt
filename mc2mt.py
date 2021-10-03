@@ -38,7 +38,7 @@ if __name__ == '__main__':
     # Conversion
     print("Starting Conversion:")
     start_time = time.time()
-    world = minetest_world.MinetestWorld(args.output)
+    world = minetest_world.MinetestWorld(args.output,args.gameid)
     mca_files = os.listdir(os.path.join(args.input,"region"))
     mca_files = [f for f in mca_files if f[-4:]==".mca" ]
     cnt_files = 0
